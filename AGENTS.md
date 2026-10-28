@@ -4,7 +4,7 @@
 Build an open-source spreadsheet app from scratch, inspired by spreadsheet apps, with our own ideas. Not a copy of Microsoft Excel or LibreOffice. LibreOffice is used only as a behavioral/technical reference during exploration.
 
 ## Current status
-Phase 17 (AI assistance): React/Vite/TypeScript shell, the pure spreadsheet model in `src/core/model`, a dark desktop-style UI, opt-in AI assistance (Local AI via Ollama and user-configured Cloud AI) in `src/core/ai` + `src/ui/ai`, multi-sheet editing, basic per-range cell formatting, a plain-HTML grid, single-sheet CSV import/export in `src/core/csv`, single-sheet XLSX import/export in `src/core/xlsx` (via exceljs), bounded undo/redo, range copy/paste, visible calculations in `src/core/calc`, ascending/descending sort in `src/core/sort`, view-only filtering in `src/core/filter`, range-scoped text cleanup in `src/core/clean`, literal find/replace in `src/core/find`, range-scoped duplicate-row removal in `src/core/dedupe`, and data-loss protection.
+React/Vite/TypeScript shell, the pure spreadsheet model in `src/core/model`, light/dark themes with i18n (English/Arabic), multi-sheet editing, per-range cell formatting, a plain-HTML grid, single-sheet CSV import/export in `src/core/csv`, single-sheet XLSX import/export in `src/core/xlsx` (via exceljs), bounded undo/redo, range copy/paste, visible calculations in `src/core/calc` shown above the grid, ascending/descending sort in `src/core/sort`, view-only filtering in `src/core/filter`, range-scoped text cleanup in `src/core/clean`, literal find/replace in `src/core/find`, range-scoped duplicate-row removal in `src/core/dedupe`, data-loss protection, and Sheetly AI (local-only placeholder) in the right Sidebar.
 No formula engine, cloud sync, or Tauri yet. Do not start those phases without an explicit request.
 
 ## Tech stack
@@ -198,15 +198,13 @@ Tests live next to the module they cover as `*.test.ts` / `*.test.tsx`.
 - New UI behavior needs a Testing Library test; keep `Ctrl+Z/Y`, `Ctrl+C/V/X`, `Ctrl+F`, Enter, Escape, arrows, Shift+arrows, and Delete working without breaking cell editing.
 
 ## AI rules (enforced in `src/core/ai` and `src/ui/ai`)
-- AI is opt-in and defaults to `disabled`; no data is sent unless the user selects Local or Cloud AI and presses Ask.
-- No project backend and no telemetry. Core AI must not import React or the DOM; network access goes through the injectable `FetchLike` (`fetch`), which tests always mock.
-- Local AI (Ollama) defaults to `http://localhost:11434` and must only use a local endpoint; `Strict local-only` blocks any non-local address. Cloud AI is OpenAI-compatible (URL, model, in-memory API key). API keys must never be written to Git, `package.json`, `.env`, or `localStorage`.
-- Only the selected range is sent (`buildSelectionContext`), bounded by `DEFAULT_MAX_CELLS`/`DEFAULT_MAX_CHARS` with a truncation warning; hidden rows are excluded with a warning. Never send the whole workbook, file paths, or config.
-- Cloud AI shows `Selected data will be sent to the configured cloud provider.` and requires an explicit consent checkbox before the first request.
-- Model output is untrusted: `parseActionPlan` + `validatePlan` reject invalid JSON, unknown actions, out-of-range targets, and network/command intent. Allowed actions are only `calculate`, `clean_text`, `sort`, `filter`, `find_replace`, `remove_duplicates`.
-- Every mutation goes Preview → Apply → `apply-ai-sheet`/`apply-ai-filter`/`calculate` (a single Undo entry for data changes). Never apply directly from a model response.
-- AI responses are assistive; the UI must not claim correctness or absolute privacy except for a genuinely local endpoint.
-- Any AI change needs core unit tests (mock fetch) and UI tests (mock provider); never use real API keys or real network in tests.
+- Sheetly AI is inside the right Sidebar and is local-only in the current product. No cloud providers, API keys, or network requests are exposed.
+- AI is opt-in and defaults to disabled with a translated not-ready message. No Ollama installer, model downloader, or setup wizard in this phase.
+- No project backend and no telemetry. Core AI must not import React or the DOM.
+- Only the selected range may be sent when enabled; hidden rows excluded with a warning. Never send the whole workbook, file paths, or config.
+- Model output is untrusted: validation rejects invalid JSON, unknown actions, out-of-range targets, and network/command intent. Allowed actions are only `calculate`, `clean_text`, `sort`, `filter`, `find_replace`, `remove_duplicates`.
+- Every mutation goes Preview → Apply with validation and a single Undo entry for data changes. Never apply directly from a model response.
+- Any AI change needs core unit tests and UI tests.
 
 ## Conventions
 - No semicolons, single quotes, and an explicit `import type` for type-only imports

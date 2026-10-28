@@ -2,7 +2,7 @@
 
 An open-source spreadsheet app built from scratch with React, TypeScript, and Vite. The design is our own; LibreOffice and Excel are used only as behavioral references, never copied.
 
-> **Status: Phase 17 — AI assistance.** The project shell, a pure data model, a plain-HTML grid UI (range selection, editing, row/column ops), CSV import/export, bounded undo/redo, range copy/paste, visible calculations, sort, view-only filtering, text cleanup, literal find/replace, range-scoped duplicate-row removal, data-loss protection, single-sheet XLSX import/export (cell values only), a dark desktop-style UI, and opt-in AI assistance (Local AI via Ollama, user-configured Cloud AI) are in place. The rest of the MVP is not implemented yet.
+> **Status: Active development.** The project shell, a pure data model, a plain-HTML grid UI (range selection, editing, row/column ops), CSV import/export, bounded undo/redo, range copy/paste, visible calculations, sort, view-only filtering, text cleanup, literal find/replace, range-scoped duplicate-row removal, data-loss protection, single-sheet XLSX import/export (cell values only), light/dark themes with i18n (English/Arabic), and opt-in Sheetly AI (local-only placeholder) are in place. No formulas, cloud sync, or Tauri yet.
 
 ## Tech stack
 
@@ -290,19 +290,9 @@ The dark layout follows desktop spreadsheet conventions with sheetly's own theme
 - The grid starts at 30 rows × 12 columns on a sheet named `Quarterly Sales`; no sample data is seeded (the reference screenshot's rows are demo content).
 - Window controls are limited to real browser actions (fullscreen); there are no fake minimize/maximize/close buttons.
 
-## AI assistance (Phase 17)
+## AI assistance
 
-AI is **disabled by default** and fully opt-in. Two providers are available, both implemented in the framework-agnostic `src/core/ai` layer (no React/DOM, no project backend, no telemetry).
-
-- **Local AI (Ollama)**: talks only to a local Ollama server at a user-configured base URL (default `http://localhost:11434`). Requires the user to [install Ollama](https://ollama.com) and pull a model themselves; sheetly never downloads models. A `Strict local-only` option blocks any non-local endpoint.
-- **Cloud AI**: an OpenAI-compatible endpoint the user configures (URL, model, and an API key kept in memory only for the session).
-
-Privacy and scope rules:
-- The default state sends nothing anywhere. Cloud AI sends data only after the user selects Cloud AI, fills in the endpoint/model/key, and agrees with the shown warning: `Selected data will be sent to the configured cloud provider.`
-- Only the selected range is sent (bounded to a cell/text limit with a truncation warning), never the whole workbook, other sheets, file paths, or API keys. API keys are never written to Git, `package.json`, `.env`, or `localStorage`.
-- AI is assistive and may be wrong. The UI states this instead of guaranteeing correctness.
-
-Features (first release): **Explain selection**, **Ask about selection**, and **Suggest action** (a structured plan, never executable code). Every mutation goes through strict validation, a **Preview**, explicit **Apply**, and is recorded as a single Undo entry. Only these existing core operations are allowed: `calculate`, `clean_text`, `sort`, `filter`, `find_replace`, `remove_duplicates`. Unknown actions, out-of-range targets, and any network/command intent are rejected.
+Sheetly AI is inside the right Sidebar and is **local-only** in the current product. It is opt-in and disabled by default with a "not ready" message. No cloud providers, API keys, or network requests are exposed. Only the selected range is sent when enabled in future phases; every mutation goes through preview/apply with validation and undo. No Ollama installer or model downloader is included yet.
 
 ## Scope
 

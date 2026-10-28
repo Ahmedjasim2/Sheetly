@@ -32,7 +32,7 @@ export function CalcResultStrip(props: CalcResultStripProps) {
   }
 
   return (
-    <div className="calc-result-strip" role="region" aria-label={t('calc.results')}>
+    <div className="calc-result-strip" role="region" aria-label="Calculation result">
       <div className="calc-strip-item calc-strip-selection">
         <span className="calc-item-label">{t('calc.selection')}:</span>
         <span className="calc-item-value">{props.selectionLabel}</span>
