@@ -1,0 +1,143 @@
+.grid-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--grid-bg);
+}
+
+.grid {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+  color: var(--text);
+  user-select: none;
+}
+
+.grid:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.grid-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-width: 88px;
+  height: 28px;
+  padding: 0 8px;
+  background: var(--grid-header-bg);
+  color: var(--grid-header-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+  border-right: 1px solid var(--grid-line);
+  border-bottom: 1px solid var(--grid-line);
+  user-select: none;
+}
+
+.grid-header.is-selected,
+.grid-header.is-active-col,
+.grid-header.is-active-row {
+  background: var(--grid-header-selected);
+  color: #fff;
+}
+
+.grid-corner {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: 46px;
+  min-width: 46px;
+  background: var(--grid-header-bg);
+  border-right: 1px solid var(--grid-line);
+  border-bottom: 1px solid var(--grid-line);
+}
+
+.grid-corner::after {
+  content: '';
+  position: absolute;
+  right: 6px;
+  bottom: 5px;
+  border-left: 5px solid transparent;
+  border-bottom: 5px solid var(--grid-header-text);
+  opacity: 0.75;
+}
+
+.grid-corner {
+  position: sticky;
+}
+
+.grid-row-header {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 46px;
+  min-width: 46px;
+  height: 30px;
+}
+
+.grid-row-header.is-selected,
+.grid-row-header.is-active-row {
+  background: var(--grid-header-selected);
+  color: #fff;
+}
+
+.grid-cell {
+  height: 30px;
+  min-width: 88px;
+  padding: 0 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--grid-bg);
+  border-right: 1px solid var(--grid-line);
+  border-bottom: 1px solid var(--grid-line);
+  cursor: cell;
+}
+
+.grid-cell.is-selected {
+  background: var(--grid-selected);
+}
+
+.grid-cell.is-focus {
+  box-shadow: inset 0 0 0 2px var(--grid-selected-line);
+}
+
+.grid-cell.is-editing {
+  padding: 0;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.grid-input {
+  width: 100%;
+  height: 100%;
+  padding: 0 8px;
+  border: none;
+  outline: none;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--surface);
+}
+
+.grid-scroll::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.grid-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border: 3px solid var(--grid-bg);
+  border-radius: 8px;
+}
+
+.grid-scroll::-webkit-scrollbar-track {
+  background: var(--grid-bg);
+}
