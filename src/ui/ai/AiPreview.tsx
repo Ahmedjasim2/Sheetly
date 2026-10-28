@@ -13,7 +13,7 @@ export function AiPreview(props: AiPreviewProps) {
   const { t } = useI18n()
 
   return (
-    <div className="ai-preview" role="region" aria-label="AI Preview">
+    <div className="ai-preview" role="region" aria-label={t('ai.preview')}>
       <p className="ai-preview-summary">{props.plan.summary}</p>
       <ul className="ai-preview-actions">
         {props.plan.actions.map((action, index) => (

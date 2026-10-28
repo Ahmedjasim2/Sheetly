@@ -22,10 +22,14 @@
 
   --success: #22c55e;
   --success-soft: rgb(34 197 94 / 14%);
+  --success-border: rgb(34 197 94 / 35%);
   --danger: #ef4444;
   --danger-soft: rgb(239 68 68 / 12%);
   --warning: #eab308;
   --warning-soft: rgb(234 179 8 / 14%);
+  --warning-border: rgb(234 179 8 / 40%);
+  --overlay: rgb(0 0 0 / 55%);
+  --accent-contrast: #fff;
   --purple: #a78bfa;
   --purple-soft: rgb(167 139 250 / 14%);
 
@@ -33,6 +37,7 @@
   --grid-header-bg: #1c2a3f;
   --grid-header-text: #cbd5e1;
   --grid-header-selected: #2563eb;
+  --grid-header-selected-text: #fff;
   --grid-line: #2b2d33;
   --grid-selected: rgb(59 130 246 / 18%);
   --grid-selected-line: #3b82f6;
@@ -64,10 +69,14 @@
 
   --success: #16a34a;
   --success-soft: rgb(22 163 74 / 12%);
+  --success-border: rgb(22 163 74 / 30%);
   --danger: #dc2626;
   --danger-soft: rgb(220 38 38 / 10%);
   --warning: #d97706;
   --warning-soft: rgb(217 119 6 / 12%);
+  --warning-border: rgb(217 119 6 / 30%);
+  --overlay: rgb(15 23 42 / 35%);
+  --accent-contrast: #fff;
   --purple: #7c3aed;
   --purple-soft: rgb(124 58 237 / 10%);
 
@@ -75,6 +84,7 @@
   --grid-header-bg: #f1f5f9;
   --grid-header-text: #334155;
   --grid-header-selected: #2563eb;
+  --grid-header-selected-text: #fff;
   --grid-line: #e2e8f0;
   --grid-selected: rgb(37 99 235 / 15%);
   --grid-selected-line: #2563eb;

@@ -1,10 +1,10 @@
-import type { CellStyle, Range, Sheet } from '../../core/model'
+import type { Range, Sheet } from '../../core/model'
 import type { ApplyOutcome } from '../../core/ai'
 import { APP_VERSION } from '../config'
 import { useI18n } from '../i18n'
 import { AiPanel } from '../ai/AiPanel'
 
-export type SidebarPanel = 'ai' | 'properties' | 'styles' | 'help'
+export type SidebarPanel = 'ai' | 'properties' | 'help'
 
 export interface SidebarProps {
   readonly panel: SidebarPanel
@@ -16,7 +16,6 @@ export interface SidebarProps {
   readonly selectionLabel: string
   readonly activeValue: string
   readonly activeType: string
-  readonly style: CellStyle
   readonly supportText: string
   readonly onApplyAI: (outcome: ApplyOutcome) => void
   readonly onFocusFind: () => void
@@ -24,11 +23,11 @@ export interface SidebarProps {
 }
 
 function PanelIcon(props: {
-  readonly name: 'grid' | 'columns' | 'search' | 'filter' | 'sparkle' | 'close'
+  readonly name: 'grid' | 'search' | 'filter' | 'sparkle' | 'close'
 }) {
   const common = {
-    width: 16,
-    height: 16,
+    width: props.name === 'sparkle' ? 19 : 16,
+    height: props.name === 'sparkle' ? 19 : 16,
     viewBox: '0 0 24 24',
     fill: 'none',
     stroke: 'currentColor',
@@ -45,13 +44,6 @@ function PanelIcon(props: {
         <svg {...common}>
           <rect x="3" y="3" width="18" height="18" rx="3" />
           <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
-        </svg>
-      )
-    case 'columns':
-      return (
-        <svg {...common}>
-          <rect x="3" y="4" width="18" height="16" rx="3" />
-          <path d="M9 4v16M15 4v16" />
         </svg>
       )
     case 'search':
@@ -83,30 +75,6 @@ function PanelIcon(props: {
   }
 }
 
-function formatStyleSummary(style: CellStyle, t: (key: string) => string): string {
-  const parts: string[] = []
-  if (style.bold) parts.push(t('format.bold'))
-  if (style.italic) parts.push(t('format.italic'))
-  if (style.underline) parts.push(t('format.underline'))
-  if (style.strikethrough) parts.push(t('format.strike'))
-  if (style.fontFamily) parts.push(style.fontFamily)
-  if (style.fontSize) parts.push(`${style.fontSize}pt`)
-  if (style.align) {
-    const alignLabel =
-      style.align === 'left'
-        ? t('format.alignLeft')
-        : style.align === 'center'
-          ? t('format.alignCenter')
-          : t('format.alignRight')
-    parts.push(alignLabel)
-  }
-  if (style.wrap) parts.push('Wrap')
-  if (style.numberFormat && style.numberFormat !== 'general') {
-    parts.push(style.numberFormat)
-  }
-  return parts.length === 0 ? t('sidebar.defaultFormatting') : parts.join(' \u00B7 ')
-}
-
 export function Sidebar(props: SidebarProps) {
   const { t } = useI18n()
 
@@ -115,12 +83,13 @@ export function Sidebar(props: SidebarProps) {
       <div className="sidebar-head">
         <button
           type="button"
-          className={`sidebar-icon${props.panel === 'ai' ? ' is-active' : ''}`}
+          className={`sidebar-icon sidebar-ai-entry${props.panel === 'ai' ? ' is-active' : ''}`}
           aria-label={t('sidebar.sheetlyAi')}
           title={t('sidebar.sheetlyAi')}
           onClick={() => props.onSelectPanel('ai')}
         >
           <PanelIcon name="sparkle" />
+          <span>{t('sidebar.sheetlyAi')}</span>
         </button>
         <button
           type="button"
@@ -130,15 +99,6 @@ export function Sidebar(props: SidebarProps) {
           onClick={() => props.onSelectPanel('properties')}
         >
           <PanelIcon name="grid" />
-        </button>
-        <button
-          type="button"
-          className={`sidebar-icon${props.panel === 'styles' ? ' is-active' : ''}`}
-          aria-label={t('sidebar.styles')}
-          title={t('sidebar.styles')}
-          onClick={() => props.onSelectPanel('styles')}
-        >
-          <PanelIcon name="columns" />
         </button>
         <button
           type="button"
@@ -196,14 +156,6 @@ export function Sidebar(props: SidebarProps) {
               {props.sheet.rowCount} {'\u00D7'} {props.sheet.columnCount}
             </dd>
           </dl>
-        )}
-
-        {props.panel === 'styles' && (
-          <div className="sidebar-section">
-            <p className="sidebar-note">{t('sidebar.currentFormatting')}</p>
-            <p className="sidebar-strong">{formatStyleSummary(props.style, t)}</p>
-            <p className="sidebar-note">{t('sidebar.formattingNote')}</p>
-          </div>
         )}
 
         {props.panel === 'help' && (

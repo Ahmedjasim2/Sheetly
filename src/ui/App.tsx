@@ -1,22 +1,16 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import type { CSSProperties, ChangeEvent } from 'react'
 import {
-  averageRange,
   cellStyleKey,
-  countNumeric,
   createRange,
   createSheet,
   formatCellId,
   formatCellValue,
-  formatSupportSummary,
   getCellValue,
-  maximumRange,
-  minimumRange,
   parseCsv,
   readXlsxBuffer,
   sheetToRows,
   stringifyCsv,
-  sumRange,
   visibleRowIndices,
   writeXlsxBuffer,
 } from '../core'
@@ -115,21 +109,73 @@ function selectionLabel(selection: Selection): string {
   return anchor === focus ? anchor : `${anchor}:${focus}`
 }
 
-function valueType(value: CellValue): string {
+function valueType(
+  value: CellValue,
+  t: (key: string) => string,
+): string {
   if (value === null) {
-    return 'Empty'
+    return t('sidebar.valueType.empty')
   }
   if (typeof value === 'boolean') {
-    return 'Boolean'
+    return t('sidebar.valueType.boolean')
   }
   if (typeof value === 'number') {
-    return 'Number'
+    return t('sidebar.valueType.number')
   }
-  return 'Text'
+  return t('sidebar.valueType.text')
 }
 
 function clampZoom(zoom: number): number {
   return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom))
+}
+
+function translateStatusMessage(
+  message: string,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string {
+  const exactMessages: Record<string, string> = {
+    'Select a cell or range to sort': 'status.notice.sort.select',
+    'Select a range to search': 'status.notice.find.selectRangeSearch',
+    'No results': 'status.notice.find.noResults',
+    'Select a cell to replace': 'status.notice.find.selectCellReplace',
+    'No match to replace': 'status.notice.find.noMatchReplace',
+    'Select a range to replace': 'status.notice.find.selectRangeReplace',
+    'No matches to replace': 'status.notice.find.noMatchesReplace',
+    'Select a range to remove duplicates': 'status.notice.dedupe.selectRange',
+    'Clear the filter before removing duplicates': 'status.notice.dedupe.clearFilter',
+    'Select more than one row to remove duplicates': 'status.notice.dedupe.selectRows',
+    'No duplicate rows found': 'status.notice.dedupe.noDuplicates',
+    'AI: filter applied': 'status.notice.ai.filterApplied',
+  }
+  const key = exactMessages[message]
+  if (key !== undefined) {
+    return t(key)
+  }
+
+  const cleanMatch = /^Cleaned (\d+) cells?$/.exec(message)
+  if (cleanMatch) {
+    return t('status.notice.clean.cleaned', { count: Number(cleanMatch[1]) })
+  }
+
+  const findMatch = /^Match (\d+) of (\d+)$/.exec(message)
+  if (findMatch) {
+    return t('status.notice.find.match', {
+      position: Number(findMatch[1]),
+      total: Number(findMatch[2]),
+    })
+  }
+
+  const replacedMatch = /^Replaced (\d+) cells?$/.exec(message)
+  if (replacedMatch) {
+    return t('status.notice.find.replaced', { count: Number(replacedMatch[1]) })
+  }
+
+  const dedupeMatch = /^Removed (\d+) duplicate rows?$/.exec(message)
+  if (dedupeMatch) {
+    return t('status.notice.dedupe.removed', { count: Number(dedupeMatch[1]) })
+  }
+
+  return message
 }
 
 function App() {
@@ -145,6 +191,9 @@ function App() {
   const [zoom, setZoom] = useState(100)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarPanel, setSidebarPanel] = useState<SidebarPanel>('ai')
+  const [importingCsv, setImportingCsv] = useState(false)
+  const [importingXlsx, setImportingXlsx] = useState(false)
+  const [exportingXlsx, setExportingXlsx] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
   const [findOpen, setFindOpen] = useState(false)
   const [findToken, setFindToken] = useState(0)
@@ -163,8 +212,9 @@ function App() {
     applyTheme(theme)
   }, [theme])
 
-  const statusText =
+  const statusNotice =
     state.sortNotice ?? state.cleanNotice ?? state.findNotice ?? state.dedupeNotice ?? state.aiNotice
+  const statusText = statusNotice === null ? '' : translateStatusMessage(statusNotice, t)
 
   const visibleRows = visibleRowIndices(sheet, state.filter)
   const label = selectionLabel(selection)
@@ -179,21 +229,7 @@ function App() {
     range === null
       ? 0
       : (range.end.row - range.start.row + 1) * (range.end.column - range.start.column + 1)
-  const stats =
-    selection === null || range === null
-      ? null
-      : (() => {
-          const count = countNumeric(sheet, range)
-          return {
-            count,
-            sum: count > 0 ? sumRange(sheet, range) : null,
-            average: count > 0 ? averageRange(sheet, range) : null,
-            minimum: count > 0 ? minimumRange(sheet, range) : null,
-            maximum: count > 0 ? maximumRange(sheet, range) : null,
-          }
-        })()
-
-  const supportText = formatSupportSummary()
+  const supportText = t('sidebar.formatScope')
   const sheetIndex = Math.max(0, tabs.findIndex((tab) => tab.id === sheet.id)) + 1
 
   useEffect(() => {
@@ -304,9 +340,7 @@ function App() {
   }
 
   function handlePrint(): void {
-    if (typeof window.print === 'function') {
-      window.print()
-    }
+    window.print()
   }
 
   async function handleToggleFullscreen(): Promise<void> {
@@ -391,22 +425,39 @@ function App() {
       return
     }
 
-    const text = await readFileAsText(file)
-    const result = parseCsv(text)
+    setImportingCsv(true)
+    try {
+      const text = await readFileAsText(file)
+      const result = parseCsv(text)
 
-    if (result.ok) {
-      dispatch({ type: 'request-import', rows: result.rows, filename: file.name })
-    } else {
+      if (result.ok) {
+        dispatch({ type: 'request-import', rows: result.rows, filename: file.name })
+      } else {
+        dispatch({
+          type: 'set-import-error',
+          message: `${t('file.importError')}: ${file.name}: ${result.message} (line ${result.line})`,
+        })
+      }
+    } catch (error) {
       dispatch({
         type: 'set-import-error',
-        message: `${file.name}: ${result.message} (line ${result.line})`,
+        message: `${t('file.importError')}: ${file.name}: ${errorMessage(error)}`,
       })
+    } finally {
+      setImportingCsv(false)
     }
   }
 
   function handleExport(): void {
-    downloadTextFile('sheetly.csv', stringifyCsv(sheetToRows(sheet)))
-    dispatch({ type: 'mark-saved' })
+    try {
+      downloadTextFile('sheetly.csv', stringifyCsv(sheetToRows(sheet)))
+      dispatch({ type: 'mark-saved' })
+    } catch (error) {
+      dispatch({
+        type: 'set-import-error',
+        message: `${t('file.exportError')}: ${errorMessage(error)}`,
+      })
+    }
   }
 
   async function handleXlsxFileChange(event: ChangeEvent<HTMLInputElement>): Promise<void> {
@@ -417,19 +468,35 @@ function App() {
       return
     }
 
+    setImportingXlsx(true)
     try {
       const buffer = await file.arrayBuffer()
       const imported = await readXlsxBuffer(buffer, { id: sheet.id, name: sheet.name })
       dispatch({ type: 'request-sheet-import', sheet: imported, filename: file.name })
     } catch (error) {
-      dispatch({ type: 'set-import-error', message: `${file.name}: ${errorMessage(error)}` })
+      dispatch({
+        type: 'set-import-error',
+        message: `${t('file.importError')}: ${file.name}: ${errorMessage(error)}`,
+      })
+    } finally {
+      setImportingXlsx(false)
     }
   }
 
   async function handleExportXlsx(): Promise<void> {
-    const buffer = await writeXlsxBuffer(sheet)
-    downloadArrayBuffer('sheetly.xlsx', buffer)
-    dispatch({ type: 'mark-saved' })
+    setExportingXlsx(true)
+    try {
+      const buffer = await writeXlsxBuffer(sheet)
+      downloadArrayBuffer('sheetly.xlsx', buffer)
+      dispatch({ type: 'mark-saved' })
+    } catch (error) {
+      dispatch({
+        type: 'set-import-error',
+        message: `${t('file.exportError')}: ${errorMessage(error)}`,
+      })
+    } finally {
+      setExportingXlsx(false)
+    }
   }
 
   const menus: readonly MenuDefinition[] = [
@@ -438,15 +505,26 @@ function App() {
       label: t('menu.file'),
       items: [
         { id: 'new', label: t('menu.file.new'), onSelect: requestNewWorkbook },
-        { id: 'import-csv', label: t('menu.file.importCsv'), onSelect: () => fileInputRef.current?.click() },
-        { id: 'save-csv', label: t('menu.file.saveCsv'), onSelect: handleExport },
+        { id: 'print', label: t('menu.file.print'), onSelect: handlePrint },
+        {
+          id: 'import-csv',
+          label: importingCsv ? t('menu.file.importingCsv') : t('menu.file.importCsv'),
+          onSelect: () => fileInputRef.current?.click(),
+          disabled: importingCsv,
+        },
         {
           id: 'import-xlsx',
-          label: t('menu.file.importXlsx'),
+          label: importingXlsx ? t('menu.file.importingXlsx') : t('menu.file.importXlsx'),
           onSelect: () => fileInputXlsxRef.current?.click(),
+          disabled: importingXlsx,
         },
-        { id: 'save-xlsx', label: t('menu.file.saveXlsx'), onSelect: handleExportXlsx },
-        { id: 'print', label: t('menu.file.print'), onSelect: handlePrint },
+        { id: 'export-csv', label: t('menu.file.exportCsv'), onSelect: handleExport },
+        {
+          id: 'export-xlsx',
+          label: exportingXlsx ? t('menu.file.exportingXlsx') : t('menu.file.exportXlsx'),
+          onSelect: handleExportXlsx,
+          disabled: exportingXlsx,
+        },
       ],
     },
     {
@@ -554,8 +632,6 @@ function App() {
         lang={lang}
         onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
         onToggleLang={() => setLang((l) => (l === 'en' ? 'ar' : 'en'))}
-        onSaveCsv={handleExport}
-        onSaveXlsx={handleExportXlsx}
       />
 
       <MenuBar menus={menus} />
@@ -568,23 +644,17 @@ function App() {
         canCalculate={selection !== null}
         canEditSelection={selection !== null}
         canPaste={state.clipboard !== null}
-        onNew={requestNewWorkbook}
-        onPrint={handlePrint}
         onCut={() => dispatch({ type: 'cut' })}
         onCopy={() => dispatch({ type: 'copy' })}
         onPaste={() => dispatch({ type: 'paste' })}
         onFind={openFind}
         onFilter={openFilter}
-        onPalette={() => {
+        onOpenAI={() => {
           setSidebarOpen(true)
-          setSidebarPanel('styles')
+          setSidebarPanel('ai')
         }}
         onUndo={() => dispatch({ type: 'undo' })}
         onRedo={() => dispatch({ type: 'redo' })}
-        onImport={() => fileInputRef.current?.click()}
-        onExport={handleExport}
-        onImportXlsx={() => fileInputXlsxRef.current?.click()}
-        onExportXlsx={handleExportXlsx}
         onCalculate={(operation) => dispatch({ type: 'calculate', operation })}
         onSort={(direction) => dispatch({ type: 'sort', direction })}
         onCleanText={(operation) => dispatch({ type: 'clean-text', operation })}
@@ -607,11 +677,6 @@ function App() {
 
       <CalcResultStrip
         selectionLabel={label}
-        count={stats?.count ?? 0}
-        sum={stats?.sum ?? null}
-        average={stats?.average ?? null}
-        minimum={stats?.minimum ?? null}
-        maximum={stats?.maximum ?? null}
         calculation={state.calculation}
       />
 
@@ -718,8 +783,7 @@ function App() {
             visibleRows={visibleRows}
             selectionLabel={label}
             activeValue={formulaValue}
-            activeType={valueType(activeCellValue)}
-            style={activeStyle}
+            activeType={valueType(activeCellValue, t)}
             supportText={supportText}
             onApplyAI={handleApplyAI}
             onFocusFind={openFind}
@@ -741,6 +805,7 @@ function App() {
         sheetCount={tabs.length}
         selectionLabel={label}
         cellCount={cellCount}
+        dirty={dirty}
         message={statusText ?? ''}
         zoom={zoom}
         onZoomIn={zoomIn}

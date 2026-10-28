@@ -42,7 +42,7 @@
 .grid-header.is-active-col,
 .grid-header.is-active-row {
   background: var(--grid-header-selected);
-  color: #fff;
+  color: var(--grid-header-selected-text);
 }
 
 .grid-corner {
@@ -83,7 +83,7 @@
 .grid-row-header.is-selected,
 .grid-row-header.is-active-row {
   background: var(--grid-header-selected);
-  color: #fff;
+  color: var(--grid-header-selected-text);
 }
 
 .grid-cell {

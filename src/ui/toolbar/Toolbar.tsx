@@ -12,20 +12,14 @@ export interface ToolbarProps {
   readonly canCalculate: boolean
   readonly canEditSelection: boolean
   readonly canPaste: boolean
-  readonly onNew: () => void
-  readonly onPrint: () => void
   readonly onCut: () => void
   readonly onCopy: () => void
   readonly onPaste: () => void
   readonly onFind: () => void
   readonly onFilter: () => void
-  readonly onPalette: () => void
+  readonly onOpenAI: () => void
   readonly onUndo: () => void
   readonly onRedo: () => void
-  readonly onImport: () => void
-  readonly onExport: () => void
-  readonly onImportXlsx: () => void
-  readonly onExportXlsx: () => void
   readonly onCalculate: (operation: CalculationName) => void
   readonly onSort: (direction: SortDirection) => void
   readonly onCleanText: (operation: CleanOperation) => void
@@ -37,11 +31,6 @@ export interface ToolbarProps {
 }
 
 type IconName =
-  | 'new'
-  | 'print'
-  | 'open'
-  | 'save'
-  | 'download'
   | 'cut'
   | 'copy'
   | 'paste'
@@ -58,7 +47,7 @@ type IconName =
   | 'col-delete'
   | 'trim'
   | 'collapse'
-  | 'palette'
+  | 'ai'
 
 function Icon(props: { readonly name: IconName }) {
   const common = {
@@ -76,47 +65,6 @@ function Icon(props: { readonly name: IconName }) {
 
   let body: ReactNode
   switch (props.name) {
-    case 'new':
-      body = (
-        <>
-          <rect x="4" y="3" width="16" height="18" rx="2" />
-          <path d="M12 8v8M8 12h8" />
-        </>
-      )
-      break
-    case 'print':
-      body = (
-        <>
-          <path d="M7 8V4h10v4" />
-          <rect x="4" y="8" width="16" height="8" rx="2" />
-          <rect x="7" y="14" width="10" height="6" rx="1" />
-        </>
-      )
-      break
-    case 'open':
-      body = (
-        <>
-          <path d="M3 8a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1" />
-          <path d="M3 10h18l-2 8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8Z" />
-        </>
-      )
-      break
-    case 'save':
-      body = (
-        <>
-          <rect x="4" y="4" width="16" height="16" rx="2" />
-          <path d="M8 4v5h8V4M8 20v-6h8v6" />
-        </>
-      )
-      break
-    case 'download':
-      body = (
-        <>
-          <path d="M12 4v10m0 0 4-4m-4 4-4-4" />
-          <path d="M4 18v2h16v-2" />
-        </>
-      )
-      break
     case 'cut':
       body = (
         <>
@@ -239,7 +187,7 @@ function Icon(props: { readonly name: IconName }) {
         </>
       )
       break
-    case 'palette':
+    case 'ai':
       body = (
         <>
           <circle cx="12" cy="12" r="8" />
@@ -287,20 +235,8 @@ export function Toolbar(props: ToolbarProps) {
 
   return (
     <div className="toolbar main-toolbar" role="toolbar" aria-label={t('toolbar.actions')}>
-      {/* 1. File actions */}
-      <div className="toolbar-group" role="group" aria-label="File">
-        <ToolButton label={t('toolbar.new')} name="new" onClick={props.onNew} />
-        <ToolButton label={t('toolbar.print')} name="print" onClick={props.onPrint} />
-        <ToolButton label={t('toolbar.importCsv')} name="open" onClick={props.onImport} />
-        <ToolButton label={t('toolbar.exportCsv')} name="save" onClick={props.onExport} />
-        <ToolButton label={t('toolbar.importXlsx')} name="open" onClick={props.onImportXlsx} />
-        <ToolButton label={t('toolbar.exportXlsx')} name="download" onClick={props.onExportXlsx} />
-      </div>
-
-      <span className="toolbar-divider" aria-hidden="true" />
-
       {/* 2. Clipboard actions */}
-      <div className="toolbar-group" role="group" aria-label="Clipboard">
+      <div className="toolbar-group" role="group" aria-label={t('toolbar.clipboard')}>
         <ToolButton
           label={t('toolbar.cut')}
           name="cut"
@@ -324,7 +260,7 @@ export function Toolbar(props: ToolbarProps) {
       <span className="toolbar-divider" aria-hidden="true" />
 
       {/* 3. Undo and redo */}
-      <div className="toolbar-group" role="group" aria-label="History">
+      <div className="toolbar-group" role="group" aria-label={t('toolbar.history')}>
         <ToolButton
           label={t('toolbar.undo')}
           name="undo"
@@ -342,7 +278,7 @@ export function Toolbar(props: ToolbarProps) {
       <span className="toolbar-divider" aria-hidden="true" />
 
       {/* 4. Search/filter/data actions */}
-      <div className="toolbar-group" role="group" aria-label="Data">
+      <div className="toolbar-group" role="group" aria-label={t('toolbar.data')}>
         <ToolButton label={t('toolbar.find')} name="find" onClick={props.onFind} />
         <ToolButton label={t('toolbar.filter')} name="filter" onClick={props.onFilter} />
         <ToolButton
@@ -380,7 +316,7 @@ export function Toolbar(props: ToolbarProps) {
       <span className="toolbar-divider" aria-hidden="true" />
 
       {/* 5. Row and column actions */}
-      <div className="toolbar-group" role="group" aria-label="Rows and columns">
+      <div className="toolbar-group" role="group" aria-label={t('toolbar.rowsColumns')}>
         <ToolButton label={t('toolbar.addRow')} name="row-add" onClick={props.onAddRow} />
         <ToolButton
           label={t('toolbar.deleteRow')}
@@ -455,14 +391,16 @@ export function Toolbar(props: ToolbarProps) {
 
       <span className="toolbar-divider" aria-hidden="true" />
 
-      {/* 7. Optional style/sidebar action */}
-      <div className="toolbar-group" role="group" aria-label="Styles">
-        <ToolButton
-          label={t('toolbar.stylesPanel')}
-          name="palette"
-          onClick={props.onPalette}
-        />
-      </div>
+      <button
+        type="button"
+        className="tool-ai-button"
+        aria-label={t('sidebar.sheetlyAi')}
+        title={t('sidebar.sheetlyAi')}
+        onClick={props.onOpenAI}
+      >
+        <Icon name="ai" />
+        <span>{t('sidebar.sheetlyAi')}</span>
+      </button>
     </div>
   )
 }

@@ -674,6 +674,7 @@ function innerGridReducer(state: GridState, action: GridAction): GridState {
         ...state,
         findScope: scope,
         selection: { anchor: match, focus: match },
+        calculation: null,
         findNotice: `Match ${index + 1} of ${matches.length}`,
         editing: false,
         draft: '',

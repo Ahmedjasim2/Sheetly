@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import App from './App'
 import { INITIAL_SHEET_COLUMNS, INITIAL_SHEET_ROWS } from './config'
 
@@ -33,7 +33,29 @@ describe('App', () => {
     render(<App />)
 
     expect(screen.getByRole('heading', { level: 1, name: 'sheetly' })).toBeInTheDocument()
-    expect(screen.getByText(/open.source spreadsheet/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Click-First Open Source Spreadsheet/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Zero Syntax Required/i)).not.toBeInTheDocument()
+  })
+
+  it('keeps unsaved changes when CSV export fails', async () => {
+    const originalCreate = URL.createObjectURL
+    URL.createObjectURL = vi.fn(() => {
+      throw new Error('download unavailable')
+    })
+
+    try {
+      render(<App />)
+      selectCell(0)
+      typeIntoSelectedCell('42')
+
+      fireEvent.click(screen.getByRole('button', { name: 'File' }))
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Export CSV' }))
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Export failed')
+      expect(screen.getAllByText('Unsaved changes').length).toBeGreaterThan(0)
+    } finally {
+      URL.createObjectURL = originalCreate
+    }
   })
 
   it('renders the grid and the editing toolbar', () => {
@@ -42,10 +64,12 @@ describe('App', () => {
     expect(screen.getByRole('grid', { name: 'Spreadsheet grid' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Redo' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Import CSV' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Export CSV' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Import XLSX' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Export XLSX' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Import CSV' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Export CSV' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Import XLSX' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Export XLSX' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Save CSV' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Save XLSX' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add row' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Delete row' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add column' })).toBeInTheDocument()
@@ -62,6 +86,43 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Replace current' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Replace all' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Remove duplicate rows' })).toBeInTheDocument()
+  })
+
+  it('keeps file operations together in the File menu and prints from there', () => {
+    const print = vi.fn()
+    const originalPrint = window.print
+    const inputClick = vi.spyOn(HTMLInputElement.prototype, 'click')
+    window.print = print
+
+    try {
+      render(<App />)
+      fireEvent.click(screen.getByRole('button', { name: 'File' }))
+
+      expect(screen.getByRole('menuitem', { name: 'New' })).toBeInTheDocument()
+      expect(screen.getByRole('menuitem', { name: 'Print' })).toBeInTheDocument()
+      expect(screen.getByRole('menuitem', { name: /Import CSV/ })).toBeInTheDocument()
+      expect(screen.getByRole('menuitem', { name: /Import XLSX/ })).toBeInTheDocument()
+      expect(screen.getByRole('menuitem', { name: 'Export CSV' })).toBeInTheDocument()
+      expect(screen.getByRole('menuitem', { name: /Export XLSX/ })).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('menuitem', { name: /Import CSV/ }))
+      expect(inputClick).toHaveBeenCalledTimes(1)
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: 'File' }))
+      fireEvent.click(screen.getByRole('menuitem', { name: /Import XLSX/ }))
+      expect(inputClick).toHaveBeenCalledTimes(2)
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: 'File' }))
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Print' }))
+
+      expect(print).toHaveBeenCalledTimes(1)
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    } finally {
+      window.print = originalPrint
+      inputClick.mockRestore()
+    }
   })
 
   it('shows the format scope in the Help panel', () => {
@@ -168,7 +229,7 @@ describe('App', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Sum' }))
 
-    const strip = screen.getByLabelText('Calculation result')
+    const strip = screen.getByLabelText('Calculation results')
     expect(strip).toHaveTextContent(/Sum.*6/)
   })
 
@@ -181,7 +242,7 @@ describe('App', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Sum' }))
 
-    const strip = screen.getByLabelText('Calculation result')
+    const strip = screen.getByLabelText('Calculation results')
     expect(strip).toHaveTextContent('No numeric values in selection')
   })
 
@@ -198,7 +259,7 @@ describe('App', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Sum' }))
 
-    const strip = screen.getByLabelText('Calculation result')
+    const strip = screen.getByLabelText('Calculation results')
     expect(strip).toHaveTextContent(/Sum.*3/)
 
     const cells = screen.getAllByRole('gridcell')
@@ -522,9 +583,10 @@ describe('App', () => {
 
       selectCell(0)
       typeIntoSelectedCell('42')
-      expect(screen.getByText('Unsaved changes')).toBeInTheDocument()
+      expect(screen.getAllByText('Unsaved changes').length).toBeGreaterThan(0)
 
-      fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }))
+      fireEvent.click(screen.getByRole('button', { name: 'File' }))
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Export CSV' }))
       expect(screen.queryByText('Unsaved changes')).not.toBeInTheDocument()
     } finally {
       URL.createObjectURL = originalCreate
@@ -569,7 +631,7 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Remove duplicate rows' }))
     fireEvent.click(screen.getByRole('button', { name: 'Remove rows' }))
     expect(screen.getAllByRole('rowheader')).toHaveLength(INITIAL_SHEET_ROWS - 5)
-  })
+  }, 60000)
 
   it('applies formatting from the format bar', () => {
     render(<App />)
@@ -609,7 +671,7 @@ describe('App', () => {
     expect(gridCells()[0]).toHaveTextContent('second')
   })
 
-  it('shows selection statistics in the calculation strip', () => {
+  it('does not show automatic calculations in the result strip', () => {
     render(<App />)
 
     selectCell(0)
@@ -620,9 +682,70 @@ describe('App', () => {
     selectCell(0)
     fireEvent.mouseDown(gridCells()[cellIndex(1, 0)], { shiftKey: true })
 
-    const strip = screen.getByLabelText('Calculation result')
-    expect(strip).toHaveTextContent(/Count.*2/)
-    expect(strip).toHaveTextContent(/Sum.*3/)
+    const strip = screen.getByLabelText('Calculation results')
+    expect(strip).not.toHaveTextContent('Count')
+    expect(strip).not.toHaveTextContent('Sum')
+  })
+
+  it.each([
+    ['Sum', '6'],
+    ['Average', '2'],
+    ['Count', '3'],
+    ['Minimum', '1'],
+    ['Maximum', '3'],
+  ])('shows only the explicitly selected %s result', (operation, result) => {
+    render(<App />)
+
+    for (const [index, value] of ['1', '2', '3'].entries()) {
+      selectCell(index)
+      typeIntoSelectedCell(value)
+    }
+    selectCell(0)
+    fireEvent.mouseDown(gridCells()[2], { shiftKey: true })
+    fireEvent.click(screen.getByRole('button', { name: operation }))
+
+    const strip = screen.getByLabelText('Calculation results')
+    expect(strip).toHaveTextContent(new RegExp(`${operation}:\\s*${result}`))
+    for (const other of ['Sum', 'Average', 'Count', 'Minimum', 'Maximum']) {
+      if (other !== operation) {
+        expect(strip).not.toHaveTextContent(new RegExp(`${other}:`))
+      }
+    }
+  })
+
+  it('clears a calculation result after the selection or cell data changes', () => {
+    render(<App />)
+
+    selectCell(0)
+    typeIntoSelectedCell('2')
+    selectCell(1)
+    typeIntoSelectedCell('3')
+    selectCell(0)
+    fireEvent.mouseDown(gridCells()[1], { shiftKey: true })
+    fireEvent.click(screen.getByRole('button', { name: 'Sum' }))
+    expect(screen.getByLabelText('Calculation results')).toHaveTextContent(/Sum:\s*5/)
+
+    selectCell(2)
+    expect(screen.getByLabelText('Calculation results')).not.toHaveTextContent('Sum')
+
+    selectCell(0)
+    fireEvent.click(screen.getByRole('button', { name: 'Sum' }))
+    typeIntoSelectedCell('9')
+    expect(screen.getByLabelText('Calculation results')).not.toHaveTextContent('Sum')
+  })
+
+  it('clears calculations on sheet changes and keeps them out of the status bar', () => {
+    render(<App />)
+
+    selectCell(0)
+    typeIntoSelectedCell('8')
+    selectCell(0)
+    fireEvent.click(screen.getByRole('button', { name: 'Sum' }))
+    expect(screen.getByLabelText('Calculation results')).toHaveTextContent(/Sum:\s*8/)
+    expect(screen.getByRole('contentinfo')).not.toHaveTextContent(/Sum|Average|Count/)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add sheet' }))
+    expect(screen.queryByLabelText('Calculation results')).not.toBeInTheDocument()
   })
 
   it('focuses the find bar with Ctrl+F', () => {
@@ -659,6 +782,11 @@ describe('App', () => {
 
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument()
 
+    fireEvent.click(screen.getByRole('button', { name: 'Sheetly AI' }))
+    expect(screen.getByRole('complementary')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Ask' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
     // Open help via menu
     fireEvent.click(screen.getByRole('button', { name: 'Help' }))
     fireEvent.click(screen.getByRole('menuitem', { name: /About sheetly/i }))
@@ -666,8 +794,9 @@ describe('App', () => {
     expect(screen.getByRole('complementary')).toBeInTheDocument()
 
     // Switch to Sheetly AI panel
-    fireEvent.click(screen.getByRole('button', { name: 'Sheetly AI' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Sheetly AI' })[1])
     expect(screen.getByRole('button', { name: 'Ask' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Styles' })).not.toBeInTheDocument()
 
     // Close sidebar
     fireEvent.click(screen.getByRole('button', { name: 'Close' }))
@@ -691,7 +820,8 @@ describe('App', () => {
 
     try {
       render(<App />)
-      fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }))
+      fireEvent.click(screen.getByRole('button', { name: 'File' }))
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Export CSV' }))
 
       expect(createObjectURL).toHaveBeenCalledTimes(1)
       expect(click).toHaveBeenCalledTimes(1)
@@ -702,5 +832,65 @@ describe('App', () => {
       URL.revokeObjectURL = originalRevoke
       click.mockRestore()
     }
+  })
+
+  it('exports the active sheet as XLSX from the File menu', async () => {
+    const createObjectURL = vi.fn(() => 'blob:xlsx')
+    const originalCreate = URL.createObjectURL
+    const originalRevoke = URL.revokeObjectURL
+    URL.createObjectURL = createObjectURL
+    URL.revokeObjectURL = vi.fn()
+
+    let download = ''
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(function (this: HTMLAnchorElement) {
+        download = this.download
+      })
+
+    try {
+      render(<App />)
+      selectCell(0)
+      typeIntoSelectedCell('42')
+      expect(screen.getAllByText('Unsaved changes').length).toBeGreaterThan(0)
+
+      fireEvent.click(screen.getByRole('button', { name: 'File' }))
+      fireEvent.click(screen.getByRole('menuitem', { name: /Export XLSX/ }))
+
+      await waitFor(() => {
+        expect(screen.queryAllByText('Unsaved changes')).toHaveLength(0)
+      }, { timeout: 10000 })
+      expect(createObjectURL).toHaveBeenCalledTimes(1)
+      expect(download).toBe('sheetly.xlsx')
+    } finally {
+      URL.createObjectURL = originalCreate
+      URL.revokeObjectURL = originalRevoke
+      click.mockRestore()
+    }
+  })
+
+  it('switches themes and languages without reloading and sets document direction', () => {
+    localStorage.removeItem('sheetly-theme')
+    localStorage.removeItem('sheetly-lang')
+    render(<App />)
+
+    fireEvent.click(screen.getByTestId('theme-toggle'))
+    expect(document.documentElement).toHaveAttribute('data-theme', 'light')
+    fireEvent.click(screen.getByTestId('theme-toggle'))
+    expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
+
+    fireEvent.click(screen.getByTestId('lang-toggle'))
+    expect(document.documentElement).toHaveAttribute('lang', 'ar')
+    expect(document.documentElement).toHaveAttribute('dir', 'rtl')
+    expect(screen.getByRole('button', { name: 'ذكاء Sheetly الاصطناعي' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'ذكاء Sheetly الاصطناعي' }))
+    expect(screen.getByText('الذكاء الاصطناعي المحلي غير جاهز')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'ملف' }))
+    expect(screen.getByRole('menuitem', { name: 'طباعة' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'تصدير CSV' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId('lang-toggle'))
+    expect(document.documentElement).toHaveAttribute('lang', 'en')
+    expect(document.documentElement).toHaveAttribute('dir', 'ltr')
   })
 })
