@@ -10,6 +10,7 @@ import {
 } from '../../core/model'
 import type { CellAddress, CellStyle, Sheet } from '../../core/model'
 import type { Selection } from '../state/gridState'
+import { useI18n } from '../i18n'
 import './Grid.css'
 
 export interface GridProps {
@@ -57,6 +58,7 @@ function clampAddress(address: CellAddress, sheet: Sheet): CellAddress {
 }
 
 export function Grid(props: GridProps) {
+  const { t } = useI18n()
   const { sheet, selection, editing, draft } = props
   const gridRef = useRef<HTMLTableElement>(null)
   const wasEditing = useRef(false)
@@ -139,7 +141,7 @@ export function Grid(props: GridProps) {
         ref={gridRef}
         className="grid"
         role="grid"
-        aria-label="Spreadsheet grid"
+        aria-label={t('grid.title')}
         tabIndex={0}
         onKeyDown={handleGridKeyDown}
         onMouseUp={() => setDragging(false)}
@@ -291,6 +293,7 @@ function styleToCss(style: CellStyle | undefined): CSSProperties | undefined {
 
 function GridCell(props: GridCellProps) {
   const { sheet, row, column, selected, active, editing, draft, style } = props
+  const { t } = useI18n()
 
   if (editing) {
     function handleChange(event: ChangeEvent<HTMLInputElement>): void {
@@ -317,7 +320,9 @@ function GridCell(props: GridCellProps) {
         <input
           className="grid-input"
           value={draft}
-          aria-label={`Edit cell ${columnLabel(column)}${row + 1}`}
+          aria-label={t('grid.editCell', {
+            cellId: `${columnLabel(column)}${row + 1}`,
+          })}
           autoFocus
           onChange={handleChange}
           onKeyDown={handleKeyDown}

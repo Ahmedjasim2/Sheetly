@@ -38,7 +38,7 @@ import { FindBar } from './find/FindBar'
 import { FormatBar } from './formatbar/FormatBar'
 import { FormulaBar } from './formulabar/FormulaBar'
 import { Grid } from './grid/Grid'
-import { I18nProvider } from './i18n'
+import { I18nProvider, translate } from './i18n'
 import type { Language } from './i18n'
 import { ImportPrompt } from './import/ImportPrompt'
 import { MenuBar } from './menubar/MenuBar'
@@ -152,6 +152,8 @@ function App() {
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null)
   const [lang, setLang] = useState<Language>(getInitialLanguage)
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
+  const t = (key: string, params?: Record<string, string | number>) =>
+    translate(lang, key, params)
 
   useEffect(() => {
     applyLanguage(lang)
@@ -271,9 +273,9 @@ function App() {
       return
     }
     setConfirmState({
-      title: 'New workbook',
-      message: 'Discard unsaved changes and start a new workbook?',
-      confirmLabel: 'Discard and start new',
+      title: t('dialog.newWorkbook.title'),
+      message: t('dialog.newWorkbook.message'),
+      confirmLabel: t('common.discardAndStart'),
       onConfirm: startNewWorkbook,
     })
   }
@@ -291,9 +293,9 @@ function App() {
       return
     }
     setConfirmState({
-      title: 'Delete sheet',
-      message: `Delete "${sheet.name}"? Its data and formatting are removed.`,
-      confirmLabel: 'Delete sheet',
+      title: t('dialog.deleteSheet.title'),
+      message: t('dialog.deleteSheet.message', { name: sheet.name }),
+      confirmLabel: t('dialog.deleteSheet.confirm'),
       onConfirm: () => {
         dispatch({ type: 'delete-sheet', sheetId: sheet.id })
         setConfirmState(null)
@@ -433,96 +435,96 @@ function App() {
   const menus: readonly MenuDefinition[] = [
     {
       id: 'file',
-      label: 'File',
+      label: t('menu.file'),
       items: [
-        { id: 'new', label: 'New workbook', onSelect: requestNewWorkbook },
-        { id: 'import-csv', label: 'Import CSV…', onSelect: () => fileInputRef.current?.click() },
-        { id: 'save-csv', label: 'Save CSV', onSelect: handleExport },
+        { id: 'new', label: t('menu.file.new'), onSelect: requestNewWorkbook },
+        { id: 'import-csv', label: t('menu.file.importCsv'), onSelect: () => fileInputRef.current?.click() },
+        { id: 'save-csv', label: t('menu.file.saveCsv'), onSelect: handleExport },
         {
           id: 'import-xlsx',
-          label: 'Import XLSX… (first sheet, values)',
+          label: t('menu.file.importXlsx'),
           onSelect: () => fileInputXlsxRef.current?.click(),
         },
-        { id: 'save-xlsx', label: 'Save XLSX (values only)', onSelect: handleExportXlsx },
-        { id: 'print', label: 'Print', onSelect: handlePrint },
+        { id: 'save-xlsx', label: t('menu.file.saveXlsx'), onSelect: handleExportXlsx },
+        { id: 'print', label: t('menu.file.print'), onSelect: handlePrint },
       ],
     },
     {
       id: 'edit',
-      label: 'Edit',
+      label: t('menu.edit'),
       items: [
-        { id: 'undo', label: 'Undo', onSelect: () => dispatch({ type: 'undo' }), disabled: !canUndo(state.history) },
-        { id: 'redo', label: 'Redo', onSelect: () => dispatch({ type: 'redo' }), disabled: !canRedo(state.history) },
-        { id: 'cut', label: 'Cut', onSelect: () => dispatch({ type: 'cut' }), disabled: selection === null },
-        { id: 'copy', label: 'Copy', onSelect: () => dispatch({ type: 'copy' }), disabled: selection === null },
-        { id: 'paste', label: 'Paste', onSelect: () => dispatch({ type: 'paste' }), disabled: state.clipboard === null },
-        { id: 'find', label: 'Find and replace', onSelect: openFind },
-        { id: 'clear', label: 'Clear cell contents', onSelect: () => dispatch({ type: 'clear-cells' }), disabled: selection === null },
+        { id: 'undo', label: t('menu.edit.undo'), onSelect: () => dispatch({ type: 'undo' }), disabled: !canUndo(state.history) },
+        { id: 'redo', label: t('menu.edit.redo'), onSelect: () => dispatch({ type: 'redo' }), disabled: !canRedo(state.history) },
+        { id: 'cut', label: t('menu.edit.cut'), onSelect: () => dispatch({ type: 'cut' }), disabled: selection === null },
+        { id: 'copy', label: t('menu.edit.copy'), onSelect: () => dispatch({ type: 'copy' }), disabled: selection === null },
+        { id: 'paste', label: t('menu.edit.paste'), onSelect: () => dispatch({ type: 'paste' }), disabled: state.clipboard === null },
+        { id: 'find', label: t('menu.edit.find'), onSelect: openFind },
+        { id: 'clear', label: t('menu.edit.clear'), onSelect: () => dispatch({ type: 'clear-cells' }), disabled: selection === null },
       ],
     },
     {
       id: 'view',
-      label: 'View',
+      label: t('menu.view'),
       items: [
-        { id: 'zoom-in', label: 'Zoom in', onSelect: zoomIn },
-        { id: 'zoom-out', label: 'Zoom out', onSelect: zoomOut },
-        { id: 'zoom-reset', label: 'Reset zoom (100%)', onSelect: zoomReset },
-        { id: 'sidebar', label: 'Toggle sidebar', onSelect: () => setSidebarOpen((open) => !open) },
-        { id: 'find-bar', label: findOpen ? 'Hide find bar' : 'Show find bar', onSelect: () => setFindOpen((open) => !open) },
-        { id: 'filter-bar', label: filterOpen ? 'Hide filter bar' : 'Show filter bar', onSelect: () => setFilterOpen((open) => !open) },
-        { id: 'fullscreen', label: 'Toggle fullscreen', onSelect: handleToggleFullscreen },
+        { id: 'zoom-in', label: t('menu.view.zoomIn'), onSelect: zoomIn },
+        { id: 'zoom-out', label: t('menu.view.zoomOut'), onSelect: zoomOut },
+        { id: 'zoom-reset', label: t('menu.view.zoomReset'), onSelect: zoomReset },
+        { id: 'sidebar', label: t('menu.view.toggleSidebar'), onSelect: () => setSidebarOpen((open) => !open) },
+        { id: 'find-bar', label: findOpen ? t('menu.view.hideFind') : t('menu.view.showFind'), onSelect: () => setFindOpen((open) => !open) },
+        { id: 'filter-bar', label: filterOpen ? t('menu.view.hideFilter') : t('menu.view.showFilter'), onSelect: () => setFilterOpen((open) => !open) },
+        { id: 'fullscreen', label: t('menu.view.toggleFullscreen'), onSelect: handleToggleFullscreen },
       ],
     },
     {
       id: 'insert',
-      label: 'Insert',
+      label: t('menu.insert'),
       items: [
-        { id: 'insert-row', label: 'Row at active cell', onSelect: addRow, disabled: selection === null },
-        { id: 'insert-column', label: 'Column at active cell', onSelect: addColumn, disabled: selection === null },
-        { id: 'insert-sheet', label: 'New sheet', onSelect: addSheet },
+        { id: 'insert-row', label: t('menu.insert.row'), onSelect: addRow, disabled: selection === null },
+        { id: 'insert-column', label: t('menu.insert.column'), onSelect: addColumn, disabled: selection === null },
+        { id: 'insert-sheet', label: t('menu.insert.sheet'), onSelect: addSheet },
       ],
     },
     {
       id: 'sheet',
-      label: 'Sheet',
+      label: t('menu.sheet'),
       items: [
-        { id: 'sheet-add', label: 'Add sheet', onSelect: addSheet },
-        { id: 'sheet-rename', label: 'Rename sheet', disabled: true, hint: 'Double-click a tab' },
-        { id: 'sheet-duplicate', label: 'Duplicate active sheet', onSelect: duplicateActiveSheet },
-        { id: 'sheet-delete', label: 'Delete active sheet', onSelect: requestDeleteActiveSheet, disabled: tabs.length <= 1 },
+        { id: 'sheet-add', label: t('menu.sheet.add'), onSelect: addSheet },
+        { id: 'sheet-rename', label: t('menu.sheet.rename'), disabled: true, hint: t('menu.sheet.renameHint') },
+        { id: 'sheet-duplicate', label: t('menu.sheet.duplicate'), onSelect: duplicateActiveSheet },
+        { id: 'sheet-delete', label: t('menu.sheet.delete'), onSelect: requestDeleteActiveSheet, disabled: tabs.length <= 1 },
       ],
     },
     {
       id: 'data',
-      label: 'Data',
+      label: t('menu.data'),
       items: [
-        { id: 'sort-asc', label: 'Sort ascending', onSelect: () => dispatch({ type: 'sort', direction: 'ascending' }), disabled: selection === null },
-        { id: 'sort-desc', label: 'Sort descending', onSelect: () => dispatch({ type: 'sort', direction: 'descending' }), disabled: selection === null },
-        { id: 'filter', label: 'Filter…', onSelect: openFilter },
-        { id: 'dedupe', label: 'Remove duplicate rows', onSelect: () => dispatch({ type: 'remove-duplicates' }), disabled: selection === null },
-        { id: 'clean-trim', label: 'Clean text: trim', onSelect: () => dispatch({ type: 'clean-text', operation: 'trim' }), disabled: selection === null },
-        { id: 'clean-collapse', label: 'Clean text: collapse spaces', onSelect: () => dispatch({ type: 'clean-text', operation: 'collapse' }), disabled: selection === null },
+        { id: 'sort-asc', label: t('menu.data.sortAsc'), onSelect: () => dispatch({ type: 'sort', direction: 'ascending' }), disabled: selection === null },
+        { id: 'sort-desc', label: t('menu.data.sortDesc'), onSelect: () => dispatch({ type: 'sort', direction: 'descending' }), disabled: selection === null },
+        { id: 'filter', label: t('menu.data.filter'), onSelect: openFilter },
+        { id: 'dedupe', label: t('menu.data.dedupe'), onSelect: () => dispatch({ type: 'remove-duplicates' }), disabled: selection === null },
+        { id: 'clean-trim', label: t('menu.data.cleanTrim'), onSelect: () => dispatch({ type: 'clean-text', operation: 'trim' }), disabled: selection === null },
+        { id: 'clean-collapse', label: t('menu.data.cleanCollapse'), onSelect: () => dispatch({ type: 'clean-text', operation: 'collapse' }), disabled: selection === null },
       ],
     },
     {
       id: 'calculate',
-      label: 'Calculate',
+      label: t('menu.calculate'),
       items: [
-        { id: 'calc-sum', label: 'Sum', onSelect: () => dispatch({ type: 'calculate', operation: 'sum' }), disabled: selection === null },
-        { id: 'calc-average', label: 'Average', onSelect: () => dispatch({ type: 'calculate', operation: 'average' }), disabled: selection === null },
-        { id: 'calc-min', label: 'Minimum', onSelect: () => dispatch({ type: 'calculate', operation: 'minimum' }), disabled: selection === null },
-        { id: 'calc-max', label: 'Maximum', onSelect: () => dispatch({ type: 'calculate', operation: 'maximum' }), disabled: selection === null },
-        { id: 'calc-count', label: 'Count', onSelect: () => dispatch({ type: 'calculate', operation: 'count' }), disabled: selection === null },
-        { id: 'calc-formulas', label: 'Formula engine', disabled: true, hint: 'Deferred' },
+        { id: 'calc-sum', label: t('menu.calculate.sum'), onSelect: () => dispatch({ type: 'calculate', operation: 'sum' }), disabled: selection === null },
+        { id: 'calc-average', label: t('menu.calculate.average'), onSelect: () => dispatch({ type: 'calculate', operation: 'average' }), disabled: selection === null },
+        { id: 'calc-min', label: t('menu.calculate.minimum'), onSelect: () => dispatch({ type: 'calculate', operation: 'minimum' }), disabled: selection === null },
+        { id: 'calc-max', label: t('menu.calculate.maximum'), onSelect: () => dispatch({ type: 'calculate', operation: 'maximum' }), disabled: selection === null },
+        { id: 'calc-count', label: t('menu.calculate.count'), onSelect: () => dispatch({ type: 'calculate', operation: 'count' }), disabled: selection === null },
+        { id: 'calc-formulas', label: t('menu.calculate.formulas'), disabled: true, hint: t('menu.deferred') },
       ],
     },
     {
       id: 'help',
-      label: 'Help',
+      label: t('menu.help'),
       items: [
         {
           id: 'help-about',
-          label: 'About sheetly (limits & version)',
+          label: t('menu.help.about'),
           onSelect: () => {
             setSidebarOpen(true)
             setSidebarPanel('help')
@@ -530,13 +532,13 @@ function App() {
         },
         {
           id: 'help-shortcuts',
-          label: 'Keyboard shortcuts',
+          label: t('menu.help.shortcuts'),
           onSelect: () => {
             setSidebarOpen(true)
             setSidebarPanel('help')
           },
         },
-        { id: 'help-charts', label: 'Charts and images', disabled: true, hint: 'Deferred' },
+        { id: 'help-charts', label: t('menu.help.charts'), disabled: true, hint: t('menu.deferred') },
       ],
     },
   ]
@@ -674,7 +676,7 @@ function App() {
             ref={fileInputRef}
             type="file"
             accept=".csv,text/csv"
-            aria-label="Import CSV file"
+            aria-label={t('import.csvFile')}
             className="visually-hidden"
             onChange={handleFileChange}
           />
@@ -683,7 +685,7 @@ function App() {
             ref={fileInputXlsxRef}
             type="file"
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            aria-label="Import XLSX file"
+            aria-label={t('import.xlsxFile')}
             className="visually-hidden"
             onChange={handleXlsxFileChange}
           />

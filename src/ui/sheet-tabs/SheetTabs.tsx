@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import type { Sheet } from '../../core/model'
+import { useI18n } from '../i18n'
 
 export interface SheetTabsProps {
   readonly sheets: readonly Sheet[]
@@ -11,6 +12,7 @@ export interface SheetTabsProps {
 }
 
 export function SheetTabs(props: SheetTabsProps) {
+  const { t } = useI18n()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -55,13 +57,13 @@ export function SheetTabs(props: SheetTabsProps) {
   }
 
   return (
-    <div className="sheet-tabs" role="tablist" aria-label="Sheets">
+    <div className="sheet-tabs" role="tablist" aria-label={t('sheetTabs.title')}>
       <div className="sheet-nav">
         <button
           type="button"
           className="sheet-nav-button"
-          aria-label="First sheet"
-          title="First sheet"
+          aria-label={t('sheetTabs.first')}
+          title={t('sheetTabs.first')}
           disabled={activeIndex <= 0}
           onClick={() => props.onSelect(props.sheets[0].id)}
         >
@@ -70,8 +72,8 @@ export function SheetTabs(props: SheetTabsProps) {
         <button
           type="button"
           className="sheet-nav-button"
-          aria-label="Previous sheet"
-          title="Previous sheet"
+          aria-label={t('sheetTabs.prev')}
+          title={t('sheetTabs.prev')}
           disabled={activeIndex <= 0}
           onClick={() => goTo(-1)}
         >
@@ -80,8 +82,8 @@ export function SheetTabs(props: SheetTabsProps) {
         <button
           type="button"
           className="sheet-nav-button"
-          aria-label="Next sheet"
-          title="Next sheet"
+          aria-label={t('sheetTabs.next')}
+          title={t('sheetTabs.next')}
           disabled={activeIndex < 0 || activeIndex >= props.sheets.length - 1}
           onClick={() => goTo(1)}
         >
@@ -90,8 +92,8 @@ export function SheetTabs(props: SheetTabsProps) {
         <button
           type="button"
           className="sheet-nav-button"
-          aria-label="Last sheet"
-          title="Last sheet"
+          aria-label={t('sheetTabs.last')}
+          title={t('sheetTabs.last')}
           disabled={activeIndex < 0 || activeIndex >= props.sheets.length - 1}
           onClick={() => props.onSelect(props.sheets[props.sheets.length - 1].id)}
         >
@@ -100,8 +102,8 @@ export function SheetTabs(props: SheetTabsProps) {
         <button
           type="button"
           className="sheet-nav-button sheet-add"
-          aria-label="Add sheet"
-          title="Add sheet"
+          aria-label={t('sheetTabs.add')}
+          title={t('sheetTabs.add')}
           onClick={props.onAdd}
         >
           +
@@ -116,7 +118,7 @@ export function SheetTabs(props: SheetTabsProps) {
               key={sheet.id}
               ref={inputRef}
               className="sheet-rename"
-              aria-label={`Rename ${sheet.name}`}
+              aria-label={t('sheetTabs.rename', { name: sheet.name })}
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={handleKeyDown}
@@ -129,7 +131,7 @@ export function SheetTabs(props: SheetTabsProps) {
               role="tab"
               aria-selected={active}
               className={`sheet-tab${active ? ' is-active' : ''}`}
-              title={`${sheet.name} (double-click to rename)`}
+              title={t('sheetTabs.doubleClickRename', { name: sheet.name })}
               onClick={() => props.onSelect(sheet.id)}
               onDoubleClick={() => startRename(sheet)}
             >

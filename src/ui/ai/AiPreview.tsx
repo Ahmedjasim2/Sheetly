@@ -1,5 +1,6 @@
 import { describeAction } from '../../core/ai'
 import type { ActionPlan } from '../../core/ai'
+import { useI18n } from '../i18n'
 
 export interface AiPreviewProps {
   readonly plan: ActionPlan
@@ -9,8 +10,10 @@ export interface AiPreviewProps {
 }
 
 export function AiPreview(props: AiPreviewProps) {
+  const { t } = useI18n()
+
   return (
-    <div className="ai-preview">
+    <div className="ai-preview" role="region" aria-label="AI Preview">
       <p className="ai-preview-summary">{props.plan.summary}</p>
       <ul className="ai-preview-actions">
         {props.plan.actions.map((action, index) => (
@@ -21,7 +24,7 @@ export function AiPreview(props: AiPreviewProps) {
       </ul>
 
       {props.errors.length > 0 && (
-        <p className="ai-error">
+        <p className="ai-error" role="alert">
           {props.errors.map((error) => (
             <span key={error}>{error}</span>
           ))}
@@ -29,11 +32,16 @@ export function AiPreview(props: AiPreviewProps) {
       )}
 
       <div className="ai-preview-buttons">
-        <button type="button" className="ai-button ai-button-primary" onClick={props.onApply} disabled={props.errors.length > 0}>
-          Apply
+        <button
+          type="button"
+          className="ai-button ai-button-primary"
+          onClick={props.onApply}
+          disabled={props.errors.length > 0}
+        >
+          {t('common.apply')}
         </button>
         <button type="button" className="ai-button" onClick={props.onCancel}>
-          Cancel
+          {t('common.cancel')}
         </button>
       </div>
     </div>

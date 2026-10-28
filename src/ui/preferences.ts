@@ -19,6 +19,9 @@ export function getInitialTheme(): Theme {
     if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return 'dark'
     }
+    if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      return 'light'
+    }
   } catch {
     // matchMedia unavailable.
   }
@@ -27,6 +30,7 @@ export function getInitialTheme(): Theme {
 
 export function applyTheme(theme: Theme): void {
   document.documentElement.dataset.theme = theme
+  document.documentElement.style.colorScheme = theme
   try {
     localStorage.setItem(THEME_KEY, theme)
   } catch {

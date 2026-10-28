@@ -23,7 +23,9 @@ export interface SidebarProps {
   readonly onFocusFilter: () => void
 }
 
-function PanelIcon(props: { readonly name: 'grid' | 'columns' | 'search' | 'filter' | 'sparkle' | 'close' }) {
+function PanelIcon(props: {
+  readonly name: 'grid' | 'columns' | 'search' | 'filter' | 'sparkle' | 'close'
+}) {
   const common = {
     width: 16,
     height: 16,
@@ -81,31 +83,41 @@ function PanelIcon(props: { readonly name: 'grid' | 'columns' | 'search' | 'filt
   }
 }
 
-function styleSummary(style: CellStyle): string {
+function formatStyleSummary(style: CellStyle, t: (key: string) => string): string {
   const parts: string[] = []
-  if (style.bold) parts.push('Bold')
-  if (style.italic) parts.push('Italic')
-  if (style.underline) parts.push('Underline')
-  if (style.strikethrough) parts.push('Strikethrough')
+  if (style.bold) parts.push(t('format.bold'))
+  if (style.italic) parts.push(t('format.italic'))
+  if (style.underline) parts.push(t('format.underline'))
+  if (style.strikethrough) parts.push(t('format.strike'))
   if (style.fontFamily) parts.push(style.fontFamily)
   if (style.fontSize) parts.push(`${style.fontSize}pt`)
-  if (style.align) parts.push(`Align ${style.align}`)
+  if (style.align) {
+    const alignLabel =
+      style.align === 'left'
+        ? t('format.alignLeft')
+        : style.align === 'center'
+          ? t('format.alignCenter')
+          : t('format.alignRight')
+    parts.push(alignLabel)
+  }
   if (style.wrap) parts.push('Wrap')
-  if (style.numberFormat && style.numberFormat !== 'general') parts.push(style.numberFormat)
-  return parts.length === 0 ? 'Default formatting' : parts.join(' \u00B7 ')
+  if (style.numberFormat && style.numberFormat !== 'general') {
+    parts.push(style.numberFormat)
+  }
+  return parts.length === 0 ? t('sidebar.defaultFormatting') : parts.join(' \u00B7 ')
 }
 
 export function Sidebar(props: SidebarProps) {
   const { t } = useI18n()
 
   return (
-    <aside className="sidebar" aria-label="Sidebar">
+    <aside className="sidebar" aria-label={t('sidebar.title')}>
       <div className="sidebar-head">
         <button
           type="button"
           className={`sidebar-icon${props.panel === 'ai' ? ' is-active' : ''}`}
-          aria-label={t('Sheetly AI')}
-          title={t('Sheetly AI')}
+          aria-label={t('sidebar.sheetlyAi')}
+          title={t('sidebar.sheetlyAi')}
           onClick={() => props.onSelectPanel('ai')}
         >
           <PanelIcon name="sparkle" />
@@ -113,8 +125,8 @@ export function Sidebar(props: SidebarProps) {
         <button
           type="button"
           className={`sidebar-icon${props.panel === 'properties' ? ' is-active' : ''}`}
-          aria-label={t('Properties')}
-          title={t('Properties')}
+          aria-label={t('sidebar.properties')}
+          title={t('sidebar.properties')}
           onClick={() => props.onSelectPanel('properties')}
         >
           <PanelIcon name="grid" />
@@ -122,8 +134,8 @@ export function Sidebar(props: SidebarProps) {
         <button
           type="button"
           className={`sidebar-icon${props.panel === 'styles' ? ' is-active' : ''}`}
-          aria-label={t('Styles')}
-          title={t('Styles')}
+          aria-label={t('sidebar.styles')}
+          title={t('sidebar.styles')}
           onClick={() => props.onSelectPanel('styles')}
         >
           <PanelIcon name="columns" />
@@ -131,8 +143,8 @@ export function Sidebar(props: SidebarProps) {
         <button
           type="button"
           className="sidebar-icon"
-          aria-label={t('Find')}
-          title={t('Find')}
+          aria-label={t('toolbar.find')}
+          title={t('toolbar.find')}
           onClick={props.onFocusFind}
         >
           <PanelIcon name="search" />
@@ -140,8 +152,8 @@ export function Sidebar(props: SidebarProps) {
         <button
           type="button"
           className="sidebar-icon"
-          aria-label={t('Filter')}
-          title={t('Filter')}
+          aria-label={t('toolbar.filter')}
+          title={t('toolbar.filter')}
           onClick={props.onFocusFilter}
         >
           <PanelIcon name="filter" />
@@ -149,8 +161,8 @@ export function Sidebar(props: SidebarProps) {
         <button
           type="button"
           className="sidebar-icon sidebar-close"
-          aria-label={t('Close')}
-          title={t('Close')}
+          aria-label={t('common.close')}
+          title={t('common.close')}
           onClick={props.onClose}
         >
           <PanelIcon name="close" />
@@ -169,15 +181,17 @@ export function Sidebar(props: SidebarProps) {
 
         {props.panel === 'properties' && (
           <dl className="property-list">
-            <dt>Sheet</dt>
+            <dt>{t('sidebar.propSheet')}</dt>
             <dd>{props.sheet.name}</dd>
-            <dt>Selection</dt>
+            <dt>{t('sidebar.propSelection')}</dt>
             <dd>{props.selectionLabel === '' ? '\u2014' : props.selectionLabel}</dd>
-            <dt>Value</dt>
-            <dd className="property-value">{props.activeValue === '' ? 'Empty' : props.activeValue}</dd>
-            <dt>Type</dt>
+            <dt>{t('sidebar.propValue')}</dt>
+            <dd className="property-value">
+              {props.activeValue === '' ? t('common.empty') : props.activeValue}
+            </dd>
+            <dt>{t('sidebar.propType')}</dt>
             <dd>{props.activeType}</dd>
-            <dt>Size</dt>
+            <dt>{t('sidebar.propSize')}</dt>
             <dd>
               {props.sheet.rowCount} {'\u00D7'} {props.sheet.columnCount}
             </dd>
@@ -186,28 +200,19 @@ export function Sidebar(props: SidebarProps) {
 
         {props.panel === 'styles' && (
           <div className="sidebar-section">
-            <p className="sidebar-note">Current cell formatting:</p>
-            <p className="sidebar-strong">{styleSummary(props.style)}</p>
-            <p className="sidebar-note">
-              Use the formatting bar above the grid to change fonts, colors, alignment, number
-              formats, and borders. Formatting is session-only and is not saved to CSV or XLSX.
-            </p>
+            <p className="sidebar-note">{t('sidebar.currentFormatting')}</p>
+            <p className="sidebar-strong">{formatStyleSummary(props.style, t)}</p>
+            <p className="sidebar-note">{t('sidebar.formattingNote')}</p>
           </div>
         )}
 
         {props.panel === 'help' && (
           <div className="sidebar-section">
             <p className="sidebar-strong">sheetly {APP_VERSION}</p>
-            <p className="sidebar-note">A standalone spreadsheet app. It is not Excel or LibreOffice.</p>
+            <p className="sidebar-note">{t('sidebar.aboutTagline')}</p>
             <p className="sidebar-note">{props.supportText}</p>
-            <p className="sidebar-note">
-              Formulas are not evaluated. Macros, charts, images, merges, and frozen panes are not
-              supported.
-            </p>
-            <p className="sidebar-note">
-              Shortcuts: Ctrl+C / Ctrl+V / Ctrl+X / Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z / Ctrl+F, arrows,
-              Shift+arrows, Enter, Escape, Delete (clears the selection).
-            </p>
+            <p className="sidebar-note">{t('sidebar.unsupportedNote')}</p>
+            <p className="sidebar-note">{t('sidebar.shortcutsNote')}</p>
           </div>
         )}
       </div>

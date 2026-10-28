@@ -1,4 +1,7 @@
-:root {
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
   --font-sans: 'Plus Jakarta Sans', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
 
@@ -36,17 +39,48 @@
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 45%);
   --shadow-md: 0 24px 50px -24px rgb(0 0 0 / 75%);
+}
 
-  color-scheme: dark;
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.5;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-subtle: #f9fafb;
+  --surface-raised: #ffffff;
+  --text: #1f2937;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --dot: #9ca3af;
+
+  --accent: #2563eb;
+  --accent-soft: rgb(37 99 235 / 10%);
+  --accent-border: rgb(37 99 235 / 35%);
+  --accent-ink: #1d4ed8;
+
+  --success: #16a34a;
+  --success-soft: rgb(22 163 74 / 12%);
+  --danger: #dc2626;
+  --danger-soft: rgb(220 38 38 / 10%);
+  --warning: #d97706;
+  --warning-soft: rgb(217 119 6 / 12%);
+  --purple: #7c3aed;
+  --purple-soft: rgb(124 58 237 / 10%);
+
+  --grid-bg: #ffffff;
+  --grid-header-bg: #f1f5f9;
+  --grid-header-text: #334155;
+  --grid-header-selected: #2563eb;
+  --grid-line: #e2e8f0;
+  --grid-selected: rgb(37 99 235 / 15%);
+  --grid-selected-line: #2563eb;
+
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 8%);
+  --shadow-md: 0 12px 30px -10px rgb(0 0 0 / 15%);
 }
 
 *,
@@ -65,6 +99,14 @@ body {
   margin: 0;
   min-height: 100vh;
   background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
@@ -75,6 +117,7 @@ body {
 
 h1,
 h2,
+h3,
 p {
   margin: 0;
 }
@@ -87,5 +130,5 @@ textarea {
 }
 
 ::selection {
-  background: rgb(59 130 246 / 35%);
+  background: var(--accent-soft);
 }

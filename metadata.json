@@ -1,0 +1,8 @@
+{
+  "name": "sheetly",
+  "description": "An open-source spreadsheet app built from scratch with React, TypeScript and Vite.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { KeyboardEvent } from 'react'
+import { useI18n } from '../i18n'
 
 export interface FormulaBarProps {
   readonly selectionLabel: string
@@ -9,6 +10,7 @@ export interface FormulaBarProps {
 }
 
 export function FormulaBar(props: FormulaBarProps) {
+  const { t } = useI18n()
   const [draft, setDraft] = useState(props.value)
   const disabled = props.selectionLabel === ''
 
@@ -24,8 +26,8 @@ export function FormulaBar(props: FormulaBarProps) {
   }
 
   return (
-    <div className="formula-bar" role="toolbar" aria-label="Formula bar">
-      <span className="formula-name" aria-label="Selected cells">
+    <div className="formula-bar" role="toolbar" aria-label={t('formulabar.label')}>
+      <span className="formula-name" aria-label={t('formulabar.selectedCells')}>
         {disabled ? '\u2014' : props.selectionLabel}
       </span>
       <span className="formula-expand" aria-hidden="true">
@@ -37,8 +39,8 @@ export function FormulaBar(props: FormulaBarProps) {
       <button
         type="button"
         className="formula-button formula-cancel"
-        aria-label="Cancel formula edit"
-        title="Cancel (Escape)"
+        aria-label={t('formulabar.cancel')}
+        title={t('formulabar.cancelTitle')}
         disabled={disabled}
         onClick={() => {
           setDraft(props.value)
@@ -50,8 +52,8 @@ export function FormulaBar(props: FormulaBarProps) {
       <button
         type="button"
         className="formula-button formula-confirm"
-        aria-label="Commit formula edit"
-        title="Commit (Enter)"
+        aria-label={t('formulabar.commit')}
+        title={t('formulabar.commitTitle')}
         disabled={disabled}
         onClick={() => props.onCommit(draft)}
       >
@@ -59,8 +61,10 @@ export function FormulaBar(props: FormulaBarProps) {
       </button>
       <input
         className="formula-input"
-        aria-label="Formula bar"
-        placeholder={disabled ? 'Select a cell to edit' : 'Type a value and press Enter'}
+        aria-label={t('formulabar.label')}
+        placeholder={
+          disabled ? t('formulabar.placeholderDisabled') : t('formulabar.placeholderActive')
+        }
         value={draft}
         disabled={disabled}
         onChange={(event) => setDraft(event.target.value)}

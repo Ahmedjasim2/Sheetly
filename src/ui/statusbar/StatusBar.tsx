@@ -21,14 +21,14 @@ export function StatusBar(props: StatusBarProps) {
   const { t } = useI18n()
 
   return (
-    <footer className="status-bar">
+    <footer className="status-bar" role="contentinfo" aria-label="Status bar">
       <div className="status-left">
         <span className="status-sheet-index">
-          {t('Sheet')} {props.sheetIndex} {t('of')} {props.sheetCount}
+          {t('statusbar.sheet')} {props.sheetIndex} {t('statusbar.of')} {props.sheetCount}
         </span>
-        <span className="status-message" role="status">
+        <span className="status-message" role="status" aria-live="polite">
           <span className="status-dot" aria-hidden="true" />
-          {props.message === '' ? t('Ready') : props.message}
+          {props.message === '' ? t('common.ready') : props.message}
         </span>
       </div>
 
@@ -38,15 +38,15 @@ export function StatusBar(props: StatusBarProps) {
             type="button"
             className="zoom-button"
             onClick={props.onZoomOut}
-            title="Zoom out"
-            aria-label="Zoom out"
+            title={t('statusbar.zoomOut')}
+            aria-label={t('statusbar.zoomOut')}
           >
             {'\u2212'}
           </button>
           <input
             type="range"
             className="zoom-slider"
-            aria-label="Zoom"
+            aria-label={t('statusbar.zoom')}
             min={ZOOM_MIN}
             max={ZOOM_MAX}
             step={ZOOM_STEP}
@@ -57,8 +57,8 @@ export function StatusBar(props: StatusBarProps) {
             type="button"
             className="zoom-button"
             onClick={props.onZoomIn}
-            title="Zoom in"
-            aria-label="Zoom in"
+            title={t('statusbar.zoomIn')}
+            aria-label={t('statusbar.zoomIn')}
           >
             +
           </button>
@@ -66,8 +66,8 @@ export function StatusBar(props: StatusBarProps) {
             type="button"
             className="zoom-value"
             onClick={props.onZoomReset}
-            title="Reset zoom"
-            aria-label="Reset zoom"
+            title={t('statusbar.zoomReset')}
+            aria-label={t('statusbar.zoomReset')}
           >
             {props.zoom}%
           </button>

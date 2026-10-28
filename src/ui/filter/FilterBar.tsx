@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { columnLabel } from '../../core/model'
 import type { FilterOperator, FilterSpec } from '../../core/filter'
+import { useI18n } from '../i18n'
 
 export interface FilterBarProps {
   readonly activeColumn: number | null
@@ -13,34 +14,26 @@ export interface FilterBarProps {
   readonly onClear: () => void
 }
 
-interface OperatorOption {
-  readonly value: FilterOperator
-  readonly label: string
-}
-
-const OPERATORS: readonly OperatorOption[] = [
-  { value: 'equals', label: 'Equals' },
-  { value: 'not-equals', label: 'Does not equal' },
-  { value: 'contains', label: 'Contains' },
-  { value: 'not-contains', label: 'Does not contain' },
-  { value: 'empty', label: 'Is empty' },
-  { value: 'not-empty', label: 'Is not empty' },
-  { value: 'greater-than', label: 'Greater than' },
-  { value: 'greater-than-or-equal', label: 'Greater than or equal' },
-  { value: 'less-than', label: 'Less than' },
-  { value: 'less-than-or-equal', label: 'Less than or equal' },
-]
-
 const VALUELESS_OPERATORS: readonly FilterOperator[] = ['empty', 'not-empty']
 
-function operatorLabel(operator: FilterOperator): string {
-  return OPERATORS.find((option) => option.value === operator)?.label ?? operator
-}
-
 export function FilterBar(props: FilterBarProps) {
+  const { t } = useI18n()
   const [operator, setOperator] = useState<FilterOperator>('equals')
   const [value, setValue] = useState('')
   const conditionRef = useRef<HTMLSelectElement>(null)
+
+  const operators: ReadonlyArray<{ readonly value: FilterOperator; readonly label: string }> = [
+    { value: 'equals', label: t('filter.op.equals') },
+    { value: 'not-equals', label: t('filter.op.notEquals') },
+    { value: 'contains', label: t('filter.op.contains') },
+    { value: 'not-contains', label: t('filter.op.notContains') },
+    { value: 'empty', label: t('filter.op.empty') },
+    { value: 'not-empty', label: t('filter.op.notEmpty') },
+    { value: 'greater-than', label: t('filter.op.greaterThan') },
+    { value: 'greater-than-or-equal', label: t('filter.op.greaterThanOrEqual') },
+    { value: 'less-than', label: t('filter.op.lessThan') },
+    { value: 'less-than-or-equal', label: t('filter.op.lessThanOrEqual') },
+  ]
 
   useEffect(() => {
     if (props.focusToken !== undefined && props.focusToken > 0) {
@@ -51,20 +44,24 @@ export function FilterBar(props: FilterBarProps) {
   const needsValue = !VALUELESS_OPERATORS.includes(operator)
   const canApply = props.activeColumn !== null && (!needsValue || value.trim() !== '')
 
+  function getOperatorLabel(op: FilterOperator): string {
+    return operators.find((option) => option.value === op)?.label ?? op
+  }
+
   return (
-    <div className="filter-bar" role="group" aria-label="Filter">
+    <div className="filter-bar" role="group" aria-label={t('filter.group')}>
       <span className="filter-label">
         {props.activeColumn !== null
-          ? `Filter column ${columnLabel(props.activeColumn)}`
-          : 'Select a cell to filter'}
+          ? `${t('filter.column')} ${columnLabel(props.activeColumn)}`
+          : t('filter.selectCellPrompt')}
       </span>
       <select
         ref={conditionRef}
-        aria-label="Filter condition"
+        aria-label={t('filter.condition')}
         value={operator}
         onChange={(event) => setOperator(event.target.value as FilterOperator)}
       >
-        {OPERATORS.map((option) => (
+        {operators.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
@@ -72,25 +69,30 @@ export function FilterBar(props: FilterBarProps) {
       </select>
       <input
         type="text"
-        aria-label="Filter value"
-        placeholder="Value"
+        aria-label={t('filter.value')}
+        placeholder={t('filter.valuePlaceholder')}
         value={value}
         disabled={!needsValue}
         onChange={(event) => setValue(event.target.value)}
       />
-      <button type="button" onClick={() => props.onApply(operator, value)} disabled={!canApply}>
-        Apply filter
+      <button
+        type="button"
+        onClick={() => props.onApply(operator, value)}
+        disabled={!canApply}
+      >
+        {t('filter.apply')}
       </button>
       <button type="button" onClick={props.onClear} disabled={props.filter === null}>
-        Clear filter
+        {t('filter.clear')}
       </button>
       {props.filter !== null && (
         <span className="filter-indicator" aria-live="polite">
-          Filter active: {columnLabel(props.filter.column)} — {operatorLabel(props.filter.operator)}
+          {t('filter.active')} {columnLabel(props.filter.column)} \u2014{' '}
+          {getOperatorLabel(props.filter.operator)}
           {props.filter.operator !== 'empty' && props.filter.operator !== 'not-empty'
             ? ` "${props.filter.value}"`
             : ''}{' '}
-          ({props.visibleCount} of {props.totalRows} rows)
+          ({props.visibleCount} {t('common.of')} {props.totalRows} {t('filter.rows')})
         </span>
       )}
     </div>

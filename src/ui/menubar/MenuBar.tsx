@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useI18n } from '../i18n'
 
 export interface MenuItemDefinition {
   readonly id: string
@@ -19,6 +20,7 @@ export interface MenuBarProps {
 }
 
 export function MenuBar(props: MenuBarProps) {
+  const { t } = useI18n()
   const [openId, setOpenId] = useState<string | null>(null)
   const containerRef = useRef<HTMLElement>(null)
 
@@ -57,7 +59,7 @@ export function MenuBar(props: MenuBarProps) {
   }
 
   return (
-    <nav className="menu-bar" aria-label="Main menu" ref={containerRef}>
+    <nav className="menu-bar" aria-label={t('menu.mainMenu')} ref={containerRef}>
       {props.menus.map((menu) => {
         const open = openId === menu.id
         return (

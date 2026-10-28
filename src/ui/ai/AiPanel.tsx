@@ -48,19 +48,19 @@ export function AiPanel(props: AiPanelProps) {
     setStatusMessage('')
 
     if (!ready) {
-      setStatusMessage('Local AI is not ready')
+      setStatusMessage(t('ai.localNotReady'))
       return
     }
     if (props.selection === null) {
-      setStatusMessage('Select a range first, then ask.')
+      setStatusMessage(t('ai.selectRangeFirst'))
       return
     }
     if (provider === null) {
-      setStatusMessage('Local AI is not ready')
+      setStatusMessage(t('ai.localNotReady'))
       return
     }
     if (userText.trim() === '') {
-      setStatusMessage('Type a request first.')
+      setStatusMessage(t('ai.typeRequestFirst'))
       return
     }
 
@@ -78,7 +78,10 @@ export function AiPanel(props: AiPanelProps) {
       const interpreted = interpretResponse({ operation, userText, context, config }, response.text)
       setResult(interpreted)
       setConversation((current) =>
-        [...current, { role: 'assistant' as const, text: interpreted.text }].slice(-MAX_CONVERSATION),
+        [
+          ...current,
+          { role: 'assistant' as const, text: interpreted.text },
+        ].slice(-MAX_CONVERSATION),
       )
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : String(error))
@@ -123,35 +126,39 @@ export function AiPanel(props: AiPanelProps) {
 
   return (
     <div className="ai-panel">
-      <h3 className="ai-panel-title">{t('Sheetly AI')}</h3>
+      <h3 className="ai-panel-title">{t('sidebar.sheetlyAi')}</h3>
 
       {!ready ? (
         <div className="ai-not-ready">
-          <p className="ai-not-ready-title">{t('Local AI is not ready')}</p>
-          <p className="ai-note">{t('Local AI setup will be available in a later phase.')}</p>
+          <p className="ai-not-ready-title">{t('ai.localNotReady')}</p>
+          <p className="ai-note">{t('ai.localSetupLater')}</p>
         </div>
       ) : (
-        <p className="ai-note">{t('Local AI — data stays on this device.')}</p>
+        <p className="ai-note">{t('ai.dataStays')}</p>
       )}
 
-      {statusMessage !== '' && <p className="ai-error">{statusMessage}</p>}
+      {statusMessage !== '' && (
+        <p className="ai-error" role="alert">
+          {statusMessage}
+        </p>
+      )}
 
       <div className="ai-request">
         <select
           className="ai-operation"
-          aria-label="AI operation"
+          aria-label={t('ai.operationLabel')}
           value={operation}
           onChange={(event) => setOperation(event.target.value as AIOperation)}
         >
-          <option value="ask">{t('Ask about selection')}</option>
-          <option value="explain">{t('Explain selection')}</option>
-          <option value="suggest">{t('Suggest changes')}</option>
+          <option value="ask">{t('ai.askSelection')}</option>
+          <option value="explain">{t('ai.explainSelection')}</option>
+          <option value="suggest">{t('ai.suggestChanges')}</option>
         </select>
 
         <textarea
           className="ai-request-input"
-          aria-label="AI request"
-          placeholder="e.g. What is the highest value?"
+          aria-label={t('ai.requestLabel')}
+          placeholder={t('ai.placeholder')}
           value={userText}
           onChange={(event) => setUserText(event.target.value)}
         />
@@ -162,7 +169,7 @@ export function AiPanel(props: AiPanelProps) {
           onClick={handleAsk}
           disabled={loading || !ready}
         >
-          {loading ? 'Working…' : t('Ask')}
+          {loading ? t('ai.working') : t('ai.ask')}
         </button>
       </div>
 
@@ -191,7 +198,7 @@ export function AiPanel(props: AiPanelProps) {
       )}
 
       <button type="button" className="ai-button ai-clear" onClick={handleClear}>
-        {t('Clear conversation')}
+        {t('ai.clearConversation')}
       </button>
     </div>
   )

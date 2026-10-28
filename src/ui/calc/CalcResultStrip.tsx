@@ -15,7 +15,7 @@ function formatNumber(value: number): string {
   return value.toLocaleString('en-US', { maximumFractionDigits: 4 })
 }
 
-/** A slim result strip shown between the formula bar and the grid. */
+/** A clean result strip shown directly between the formula bar and the grid. */
 export function CalcResultStrip(props: CalcResultStripProps) {
   const { t } = useI18n()
 
@@ -23,37 +23,59 @@ export function CalcResultStrip(props: CalcResultStripProps) {
     return null
   }
 
-  const operationLabel: Record<CalculationName, string> = {
-    sum: t('Sum'),
-    average: t('Average'),
-    minimum: t('Minimum'),
-    maximum: t('Maximum'),
-    count: t('Count'),
+  const operationNames: Record<CalculationName, string> = {
+    sum: t('calc.sum'),
+    average: t('calc.average'),
+    minimum: t('calc.minimum'),
+    maximum: t('calc.maximum'),
+    count: t('calc.count'),
   }
 
   return (
-    <div className="calc-result-strip" aria-label="Calculation result">
-      <span className="calc-strip-label">
-        {t('Selection')}: {props.selectionLabel}
-      </span>
+    <div className="calc-result-strip" role="region" aria-label={t('calc.results')}>
+      <div className="calc-strip-item calc-strip-selection">
+        <span className="calc-item-label">{t('calc.selection')}:</span>
+        <span className="calc-item-value">{props.selectionLabel}</span>
+      </div>
 
-      {props.calculation !== null ? (
-        <span className="calc-strip-result">
-          {operationLabel[props.calculation.operation]}
-          {props.calculation.value === null
-            ? `: ${t('No numeric values in selection')}`
-            : ` = ${formatNumber(props.calculation.value)}`}
-        </span>
-      ) : props.count > 0 ? (
-        <span className="calc-strip-stats">
-          {`${t('Sum')}: ${formatNumber(props.sum ?? 0)}`}
-          {` \u00B7 ${t('Average')}: ${formatNumber(props.average ?? 0)}`}
-          {` \u00B7 ${t('Minimum')}: ${formatNumber(props.minimum ?? 0)}`}
-          {` \u00B7 ${t('Maximum')}: ${formatNumber(props.maximum ?? 0)}`}
-          {` \u00B7 ${t('Count')}: ${props.count}`}
-        </span>
+      {props.calculation !== null && (
+        <div className="calc-strip-item calc-strip-active-op">
+          <span className="calc-item-label">{operationNames[props.calculation.operation]}:</span>
+          <span className="calc-item-value">
+            {props.calculation.value === null
+              ? t('calc.noNumericValues')
+              : formatNumber(props.calculation.value)}
+          </span>
+        </div>
+      )}
+
+      {props.count > 0 ? (
+        <div className="calc-strip-stats">
+          <div className="calc-strip-item">
+            <span className="calc-item-label">{t('calc.sum')}:</span>
+            <span className="calc-item-value">{formatNumber(props.sum ?? 0)}</span>
+          </div>
+          <div className="calc-strip-item">
+            <span className="calc-item-label">{t('calc.average')}:</span>
+            <span className="calc-item-value">{formatNumber(props.average ?? 0)}</span>
+          </div>
+          <div className="calc-strip-item">
+            <span className="calc-item-label">{t('calc.minimum')}:</span>
+            <span className="calc-item-value">{formatNumber(props.minimum ?? 0)}</span>
+          </div>
+          <div className="calc-strip-item">
+            <span className="calc-item-label">{t('calc.maximum')}:</span>
+            <span className="calc-item-value">{formatNumber(props.maximum ?? 0)}</span>
+          </div>
+          <div className="calc-strip-item">
+            <span className="calc-item-label">{t('calc.count')}:</span>
+            <span className="calc-item-value">{props.count}</span>
+          </div>
+        </div>
       ) : (
-        <span className="calc-strip-empty">{t('No numeric values in selection')}</span>
+        <div className="calc-strip-item calc-strip-empty">
+          <span>{t('calc.noNumericValues')}</span>
+        </div>
       )}
     </div>
   )

@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n'
+
 export interface DedupePromptProps {
   readonly removedRows: number
   readonly onConfirm: () => void
@@ -5,15 +7,17 @@ export interface DedupePromptProps {
 }
 
 export function DedupePrompt(props: DedupePromptProps) {
+  const { t } = useI18n()
+
   return (
-    <div className="import-prompt" role="dialog" aria-label="Remove duplicate rows confirmation">
-      <p>Remove {props.removedRows} duplicate rows?</p>
+    <div className="import-prompt" role="dialog" aria-label={t('dedupe.dialog')}>
+      <p>{t('dedupe.prompt', { count: props.removedRows })}</p>
       <div className="import-prompt-actions">
         <button type="button" onClick={props.onConfirm}>
-          Remove rows
+          {t('dedupe.removeRows')}
         </button>
         <button type="button" onClick={props.onCancel}>
-          Cancel
+          {t('common.cancel')}
         </button>
       </div>
     </div>

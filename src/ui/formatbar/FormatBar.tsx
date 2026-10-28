@@ -1,4 +1,5 @@
 import type { CellStyle, NumberFormat } from '../../core/model'
+import { useI18n } from '../i18n'
 
 export interface FormatBarProps {
   readonly style: CellStyle
@@ -18,16 +19,12 @@ const FONT_FAMILIES = [
 
 const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32]
 
-const NUMBER_FORMATS: ReadonlyArray<{ readonly value: NumberFormat; readonly label: string }> = [
-  { value: 'general', label: 'General' },
-  { value: 'number', label: 'Number' },
-  { value: 'percent', label: 'Percentage' },
-  { value: 'currency', label: 'Currency' },
-]
-
 const DEFAULT_FONT = 'Plus Jakarta Sans'
 
-const ALIGN_LINES: Record<'left' | 'center' | 'right', ReadonlyArray<readonly [number, number, number]>> = {
+const ALIGN_LINES: Record<
+  'left' | 'center' | 'right',
+  ReadonlyArray<readonly [number, number, number]>
+> = {
   left: [
     [3, 6, 18],
     [3, 12, 11],
@@ -49,7 +46,15 @@ function AlignIcon(props: { readonly align: 'left' | 'center' | 'right' }) {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       {ALIGN_LINES[props.align].map(([x, y, width]) => (
-        <rect key={`${x}-${y}`} x={x} y={y} width={width} height="2" rx="1" fill="currentColor" />
+        <rect
+          key={`${x}-${y}`}
+          x={x}
+          y={y}
+          width={width}
+          height="2"
+          rx="1"
+          fill="currentColor"
+        />
       ))}
     </svg>
   )
@@ -57,12 +62,25 @@ function AlignIcon(props: { readonly align: 'left' | 'center' | 'right' }) {
 
 export function FormatBar(props: FormatBarProps) {
   const { style, canFormat, onApply } = props
+  const { t } = useI18n()
+
+  const numberFormats: ReadonlyArray<{ readonly value: NumberFormat; readonly label: string }> = [
+    { value: 'general', label: t('format.numberFormatGeneral') },
+    { value: 'number', label: t('format.numberFormatNumber') },
+    { value: 'percent', label: t('format.numberFormatPercent') },
+    { value: 'currency', label: t('format.numberFormatCurrency') },
+  ]
+
+  const isLight =
+    typeof document !== 'undefined' && document.documentElement.dataset.theme === 'light'
+  const defaultTextColor = isLight ? '#1f2937' : '#e7e8ea'
+  const defaultBgColor = isLight ? '#ffffff' : '#202124'
 
   return (
-    <div className="format-bar" role="toolbar" aria-label="Formatting">
+    <div className="format-bar" role="toolbar" aria-label={t('format.toolbar')}>
       <select
         className="format-select format-font"
-        aria-label="Font family"
+        aria-label={t('format.fontFamily')}
         value={style.fontFamily ?? DEFAULT_FONT}
         disabled={!canFormat}
         onChange={(event) =>
@@ -83,7 +101,7 @@ export function FormatBar(props: FormatBarProps) {
 
       <select
         className="format-select format-size"
-        aria-label="Font size"
+        aria-label={t('format.fontSize')}
         value={String(style.fontSize ?? 11)}
         disabled={!canFormat}
         onChange={(event) => onApply({ fontSize: Number(event.target.value) })}
@@ -100,8 +118,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle format-bold"
-        aria-label="Bold"
-        title="Bold"
+        aria-label={t('format.bold')}
+        title={t('format.bold')}
         aria-pressed={style.bold === true}
         disabled={!canFormat}
         onClick={() => onApply({ bold: !(style.bold ?? false) })}
@@ -111,8 +129,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle format-italic"
-        aria-label="Italic"
-        title="Italic"
+        aria-label={t('format.italic')}
+        title={t('format.italic')}
         aria-pressed={style.italic === true}
         disabled={!canFormat}
         onClick={() => onApply({ italic: !(style.italic ?? false) })}
@@ -122,8 +140,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle format-underline"
-        aria-label="Underline"
-        title="Underline"
+        aria-label={t('format.underline')}
+        title={t('format.underline')}
         aria-pressed={style.underline === true}
         disabled={!canFormat}
         onClick={() => onApply({ underline: !(style.underline ?? false) })}
@@ -133,8 +151,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle format-strike"
-        aria-label="Strikethrough"
-        title="Strikethrough"
+        aria-label={t('format.strike')}
+        title={t('format.strike')}
         aria-pressed={style.strikethrough === true}
         disabled={!canFormat}
         onClick={() => onApply({ strikethrough: !(style.strikethrough ?? false) })}
@@ -144,28 +162,28 @@ export function FormatBar(props: FormatBarProps) {
 
       <span className="format-divider" aria-hidden="true" />
 
-      <label className="format-color format-text-color" title="Text color">
+      <label className="format-color format-text-color" title={t('format.textColor')}>
         <span className="format-color-label" aria-hidden="true">
           A
         </span>
         <span className="format-color-swatch" aria-hidden="true" />
         <input
           type="color"
-          aria-label="Text color"
-          value={style.textColor ?? '#e7e8ea'}
+          aria-label={t('format.textColor')}
+          value={style.textColor ?? defaultTextColor}
           disabled={!canFormat}
           onChange={(event) => onApply({ textColor: event.target.value })}
         />
       </label>
-      <label className="format-color format-fill-color" title="Fill color">
+      <label className="format-color format-fill-color" title={t('format.fillColor')}>
         <span className="format-color-label" aria-hidden="true">
           {'\u25A7'}
         </span>
         <span className="format-color-swatch" aria-hidden="true" />
         <input
           type="color"
-          aria-label="Background color"
-          value={style.backgroundColor ?? '#202124'}
+          aria-label={t('format.backgroundColor')}
+          value={style.backgroundColor ?? defaultBgColor}
           disabled={!canFormat}
           onChange={(event) => onApply({ backgroundColor: event.target.value })}
         />
@@ -176,8 +194,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle"
-        aria-label="Align left"
-        title="Align left"
+        aria-label={t('format.alignLeft')}
+        title={t('format.alignLeft')}
         aria-pressed={style.align === 'left'}
         disabled={!canFormat}
         onClick={() => onApply({ align: 'left' })}
@@ -187,8 +205,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle"
-        aria-label="Align center"
-        title="Align center"
+        aria-label={t('format.alignCenter')}
+        title={t('format.alignCenter')}
         aria-pressed={style.align === 'center'}
         disabled={!canFormat}
         onClick={() => onApply({ align: 'center' })}
@@ -198,8 +216,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle"
-        aria-label="Align right"
-        title="Align right"
+        aria-label={t('format.alignRight')}
+        title={t('format.alignRight')}
         aria-pressed={style.align === 'right'}
         disabled={!canFormat}
         onClick={() => onApply({ align: 'right' })}
@@ -211,12 +229,12 @@ export function FormatBar(props: FormatBarProps) {
 
       <select
         className="format-select format-number"
-        aria-label="Number format"
+        aria-label={t('format.numberFormat')}
         value={style.numberFormat ?? 'general'}
         disabled={!canFormat}
         onChange={(event) => onApply({ numberFormat: event.target.value as NumberFormat })}
       >
-        {NUMBER_FORMATS.map((format) => (
+        {numberFormats.map((format) => (
           <option key={format.value} value={format.value}>
             {format.label}
           </option>
@@ -226,8 +244,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle format-number-button"
-        aria-label="Number format #"
-        title="Number format"
+        aria-label={t('format.numberFormatButton')}
+        title={t('format.numberFormat')}
         aria-pressed={style.numberFormat === 'number'}
         disabled={!canFormat}
         onClick={() => onApply({ numberFormat: 'number', decimals: style.decimals ?? 2 })}
@@ -237,8 +255,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle format-number-button"
-        aria-label="Currency format"
-        title="Currency format"
+        aria-label={t('format.currencyButton')}
+        title={t('format.currencyButton')}
         aria-pressed={style.numberFormat === 'currency'}
         disabled={!canFormat}
         onClick={() => onApply({ numberFormat: 'currency', decimals: style.decimals ?? 2 })}
@@ -248,8 +266,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle format-number-button"
-        aria-label="Percent format"
-        title="Percentage format"
+        aria-label={t('format.percentButton')}
+        title={t('format.percentButton')}
         aria-pressed={style.numberFormat === 'percent'}
         disabled={!canFormat}
         onClick={() => onApply({ numberFormat: 'percent', decimals: style.decimals ?? 0 })}
@@ -259,8 +277,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle format-number-button"
-        aria-label="Date format"
-        title="Date format (deferred)"
+        aria-label={t('format.dateButton')}
+        title={t('format.dateDeferred')}
         disabled
       >
         {'\u{1F4C5}'}
@@ -271,8 +289,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle"
-        aria-label="All borders"
-        title="All borders"
+        aria-label={t('format.allBorders')}
+        title={t('format.allBorders')}
         aria-pressed={style.border === 'all'}
         disabled={!canFormat}
         onClick={() => onApply({ border: 'all' })}
@@ -282,8 +300,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle"
-        aria-label="No borders"
-        title="No borders"
+        aria-label={t('format.noBorders')}
+        title={t('format.noBorders')}
         aria-pressed={style.border === 'none'}
         disabled={!canFormat}
         onClick={() => onApply({ border: 'none' })}
@@ -293,8 +311,8 @@ export function FormatBar(props: FormatBarProps) {
       <button
         type="button"
         className="format-toggle"
-        aria-label="Merge cells"
-        title="Merge cells (deferred)"
+        aria-label={t('format.mergeCells')}
+        title={t('format.mergeDeferred')}
         disabled
       >
         {'\u229E'}

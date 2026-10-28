@@ -1,4 +1,4 @@
-import { APP_NAME, APP_TAGLINE } from '../../core'
+import { APP_NAME } from '../../core'
 import { useI18n } from '../i18n'
 import type { Language } from '../i18n'
 import type { Theme } from '../preferences'
@@ -18,8 +18,11 @@ export interface TitleBarProps {
 export function TitleBar(props: TitleBarProps) {
   const { t } = useI18n()
 
+  const themeTitle = props.theme === 'dark' ? t('theme.switchToLight') : t('theme.switchToDark')
+  const langTitle = props.lang === 'ar' ? t('lang.switchToEnglish') : t('lang.switchToArabic')
+
   return (
-    <header className="title-bar">
+    <header className="title-bar" role="banner" aria-label="Application title bar">
       <div className="title-left">
         <span className="app-logo" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" focusable="false">
@@ -35,37 +38,96 @@ export function TitleBar(props: TitleBarProps) {
         <span className="title-doc">{props.workbookName}</span>
         <span className="title-sheet">[{props.sheetName}]</span>
         <span className={`title-state${props.dirty ? ' is-dirty' : ''}`}>
-          {props.dirty ? t('Unsaved changes') : t('Saved')}
+          {props.dirty ? t('titlebar.unsavedChanges') : t('titlebar.saved')}
         </span>
       </div>
 
-      <p className="title-tagline">{APP_TAGLINE}</p>
+      <p className="title-tagline">{t('app.tagline')}</p>
 
       <div className="title-actions">
-        <button
-          type="button"
-          className="icon-button title-toggle"
-          onClick={props.onToggleTheme}
-          title={props.theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          aria-label="Toggle theme"
-        >
-          {props.theme === 'dark' ? '\u2600' : '\u263E'}
-        </button>
-        <button
-          type="button"
-          className="icon-button title-toggle"
-          onClick={props.onToggleLang}
-          title={props.lang === 'ar' ? 'English' : '\u0627\u0644\u0639\u0631\u0628\u064A\u0629'}
-          aria-label="Toggle language"
-        >
-          {props.lang === 'ar' ? 'EN' : '\u0639'}
-        </button>
-        <button type="button" className="save-button" onClick={props.onSaveCsv}>
-          {t('Save CSV')}
-        </button>
-        <button type="button" className="save-button save-button-primary" onClick={props.onSaveXlsx}>
-          {t('Save XLSX')}
-        </button>
+        <div className="save-group" role="group" aria-label={t('titlebar.saveActions')}>
+          <button type="button" className="save-button" onClick={props.onSaveCsv}>
+            {t('common.saveCsv')}
+          </button>
+          <button
+            type="button"
+            className="save-button save-button-primary"
+            onClick={props.onSaveXlsx}
+          >
+            {t('common.saveXlsx')}
+          </button>
+        </div>
+
+        <span className="title-divider" aria-hidden="true" />
+
+        <div className="preferences-group" role="group" aria-label={t('titlebar.preferences')}>
+          <button
+            type="button"
+            className="pref-button lang-toggle"
+            data-testid="lang-toggle"
+            onClick={props.onToggleLang}
+            title={langTitle}
+            aria-label={langTitle}
+            aria-pressed={props.lang === 'ar'}
+          >
+            <span className={`lang-badge${props.lang === 'en' ? ' is-active' : ''}`}>EN</span>
+            <span className="lang-sep" aria-hidden="true">
+              /
+            </span>
+            <span className={`lang-badge${props.lang === 'ar' ? ' is-active' : ''}`}>العربية</span>
+          </button>
+
+          <button
+            type="button"
+            className={`pref-button theme-toggle is-${props.theme}`}
+            data-testid="theme-toggle"
+            onClick={props.onToggleTheme}
+            title={themeTitle}
+            aria-label={themeTitle}
+            aria-pressed={props.theme === 'light'}
+          >
+            <span className="theme-icon" aria-hidden="true">
+              {props.theme === 'dark' ? (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+              ) : (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              )}
+            </span>
+            <span className="theme-text">
+              {props.theme === 'dark' ? t('theme.dark') : t('theme.light')}
+            </span>
+          </button>
+        </div>
       </div>
     </header>
   )

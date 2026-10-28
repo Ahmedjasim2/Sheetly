@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useI18n } from '../i18n'
 
 export interface FindBarProps {
   /** Increment to move focus to the find input. */
@@ -9,6 +10,7 @@ export interface FindBarProps {
 }
 
 export function FindBar(props: FindBarProps) {
+  const { t } = useI18n()
   const [query, setQuery] = useState('')
   const [replacement, setReplacement] = useState('')
   const [caseSensitive, setCaseSensitive] = useState(true)
@@ -22,20 +24,20 @@ export function FindBar(props: FindBarProps) {
   }, [props.focusToken])
 
   return (
-    <div className="find-bar" role="group" aria-label="Find and replace">
-      <span className="filter-label">Find and replace</span>
+    <div className="find-bar" role="group" aria-label={t('find.group')}>
+      <span className="filter-label">{t('find.title')}</span>
       <input
         ref={findRef}
         type="text"
-        aria-label="Find text"
-        placeholder="Find"
+        aria-label={t('find.findText')}
+        placeholder={t('find.findPlaceholder')}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
       />
       <input
         type="text"
-        aria-label="Replace text"
-        placeholder="Replace with"
+        aria-label={t('find.replaceText')}
+        placeholder={t('find.replacePlaceholder')}
         value={replacement}
         onChange={(event) => setReplacement(event.target.value)}
       />
@@ -45,24 +47,28 @@ export function FindBar(props: FindBarProps) {
           checked={caseSensitive}
           onChange={(event) => setCaseSensitive(event.target.checked)}
         />
-        Case sensitive
+        {t('find.caseSensitive')}
       </label>
-      <button type="button" onClick={() => props.onFindNext(query, caseSensitive)} disabled={query === ''}>
-        Find next
+      <button
+        type="button"
+        onClick={() => props.onFindNext(query, caseSensitive)}
+        disabled={query === ''}
+      >
+        {t('find.findNext')}
       </button>
       <button
         type="button"
         onClick={() => props.onReplaceCurrent(query, replacement, caseSensitive)}
         disabled={query === ''}
       >
-        Replace current
+        {t('find.replaceCurrent')}
       </button>
       <button
         type="button"
         onClick={() => props.onReplaceAll(query, replacement, caseSensitive)}
         disabled={query === ''}
       >
-        Replace all
+        {t('find.replaceAll')}
       </button>
     </div>
   )

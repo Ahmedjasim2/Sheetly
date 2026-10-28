@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n'
+
 export interface ConfirmDialogProps {
   readonly title: string
   readonly message: string
@@ -7,6 +9,8 @@ export interface ConfirmDialogProps {
 }
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
+  const { t } = useI18n()
+
   return (
     <div className="modal-backdrop">
       <div className="confirm-dialog" role="dialog" aria-label={props.title}>
@@ -17,7 +21,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
             {props.confirmLabel}
           </button>
           <button type="button" onClick={props.onCancel}>
-            Cancel
+            {t('common.cancel')}
           </button>
         </div>
       </div>

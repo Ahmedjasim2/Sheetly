@@ -286,33 +286,35 @@ export function Toolbar(props: ToolbarProps) {
   const { t } = useI18n()
 
   return (
-    <div className="toolbar main-toolbar" role="toolbar" aria-label="Sheet actions">
-      <div className="toolbar-group">
-        <ToolButton label={t('New')} name="new" onClick={props.onNew} />
-        <ToolButton label="Print" name="print" onClick={props.onPrint} />
-        <ToolButton label="Import CSV" name="open" onClick={props.onImport} />
-        <ToolButton label="Export CSV" name="save" onClick={props.onExport} />
-        <ToolButton label="Import XLSX" name="open" onClick={props.onImportXlsx} />
-        <ToolButton label="Export XLSX" name="download" onClick={props.onExportXlsx} />
+    <div className="toolbar main-toolbar" role="toolbar" aria-label={t('toolbar.actions')}>
+      {/* 1. File actions */}
+      <div className="toolbar-group" role="group" aria-label="File">
+        <ToolButton label={t('toolbar.new')} name="new" onClick={props.onNew} />
+        <ToolButton label={t('toolbar.print')} name="print" onClick={props.onPrint} />
+        <ToolButton label={t('toolbar.importCsv')} name="open" onClick={props.onImport} />
+        <ToolButton label={t('toolbar.exportCsv')} name="save" onClick={props.onExport} />
+        <ToolButton label={t('toolbar.importXlsx')} name="open" onClick={props.onImportXlsx} />
+        <ToolButton label={t('toolbar.exportXlsx')} name="download" onClick={props.onExportXlsx} />
       </div>
 
       <span className="toolbar-divider" aria-hidden="true" />
 
-      <div className="toolbar-group">
+      {/* 2. Clipboard actions */}
+      <div className="toolbar-group" role="group" aria-label="Clipboard">
         <ToolButton
-          label="Cut"
+          label={t('toolbar.cut')}
           name="cut"
           onClick={props.onCut}
           disabled={!props.canEditSelection}
         />
         <ToolButton
-          label="Copy"
+          label={t('toolbar.copy')}
           name="copy"
           onClick={props.onCopy}
           disabled={!props.canEditSelection}
         />
         <ToolButton
-          label="Paste"
+          label={t('toolbar.paste')}
           name="paste"
           onClick={props.onPaste}
           disabled={!props.canPaste}
@@ -321,88 +323,145 @@ export function Toolbar(props: ToolbarProps) {
 
       <span className="toolbar-divider" aria-hidden="true" />
 
-      <div className="toolbar-group">
-        <ToolButton label={t('Undo')} name="undo" onClick={props.onUndo} disabled={!props.canUndo} />
-        <ToolButton label={t('Redo')} name="redo" onClick={props.onRedo} disabled={!props.canRedo} />
+      {/* 3. Undo and redo */}
+      <div className="toolbar-group" role="group" aria-label="History">
+        <ToolButton
+          label={t('toolbar.undo')}
+          name="undo"
+          onClick={props.onUndo}
+          disabled={!props.canUndo}
+        />
+        <ToolButton
+          label={t('toolbar.redo')}
+          name="redo"
+          onClick={props.onRedo}
+          disabled={!props.canRedo}
+        />
       </div>
 
       <span className="toolbar-divider" aria-hidden="true" />
 
-      <ToolButton label={t('Find')} name="find" onClick={props.onFind} />
-
-      <span className="toolbar-divider" aria-hidden="true" />
-
-      <div className="toolbar-group">
+      {/* 4. Search/filter/data actions */}
+      <div className="toolbar-group" role="group" aria-label="Data">
+        <ToolButton label={t('toolbar.find')} name="find" onClick={props.onFind} />
+        <ToolButton label={t('toolbar.filter')} name="filter" onClick={props.onFilter} />
         <ToolButton
-          label="Sort ascending"
+          label={t('toolbar.sortAsc')}
           name="sort-asc"
           onClick={() => props.onSort('ascending')}
+          disabled={!props.canEditSelection}
         />
         <ToolButton
-          label="Sort descending"
+          label={t('toolbar.sortDesc')}
           name="sort-desc"
           onClick={() => props.onSort('descending')}
+          disabled={!props.canEditSelection}
         />
-        <ToolButton label={t('Filter')} name="filter" onClick={props.onFilter} />
         <ToolButton
-          label="Remove duplicate rows"
+          label={t('toolbar.dedupe')}
           name="dedupe"
           onClick={props.onRemoveDuplicates}
+          disabled={!props.canEditSelection}
+        />
+        <ToolButton
+          label={t('toolbar.trim')}
+          name="trim"
+          onClick={() => props.onCleanText('trim')}
+          disabled={!props.canEditSelection}
+        />
+        <ToolButton
+          label={t('toolbar.collapse')}
+          name="collapse"
+          onClick={() => props.onCleanText('collapse')}
+          disabled={!props.canEditSelection}
         />
       </div>
 
       <span className="toolbar-divider" aria-hidden="true" />
 
-      <div className="toolbar-group">
-        <ToolButton label="Add row" name="row-add" onClick={props.onAddRow} />
+      {/* 5. Row and column actions */}
+      <div className="toolbar-group" role="group" aria-label="Rows and columns">
+        <ToolButton label={t('toolbar.addRow')} name="row-add" onClick={props.onAddRow} />
         <ToolButton
-          label="Delete row"
+          label={t('toolbar.deleteRow')}
           name="row-delete"
           onClick={props.onDeleteRow}
           disabled={!props.canDeleteRow}
         />
-        <ToolButton label="Add column" name="col-add" onClick={props.onAddColumn} />
+        <ToolButton label={t('toolbar.addColumn')} name="col-add" onClick={props.onAddColumn} />
         <ToolButton
-          label="Delete column"
+          label={t('toolbar.deleteColumn')}
           name="col-delete"
           onClick={props.onDeleteColumn}
           disabled={!props.canDeleteColumn}
-        />
-        <ToolButton
-          label="Trim spaces"
-          name="trim"
-          onClick={() => props.onCleanText('trim')}
-        />
-        <ToolButton
-          label="Collapse spaces"
-          name="collapse"
-          onClick={() => props.onCleanText('collapse')}
         />
       </div>
 
       <span className="toolbar-divider" aria-hidden="true" />
 
-      <ToolButton label="Open styles panel" name="palette" onClick={props.onPalette} />
+      {/* 6. Calculate actions */}
+      <div className="toolbar-group calc-toolbar-group" role="group" aria-label={t('toolbar.calculate')}>
+        <button
+          type="button"
+          className="tool-calc-button calc-button"
+          aria-label={t('calc.sum')}
+          title={t('calc.sum')}
+          disabled={!props.canCalculate}
+          onClick={() => props.onCalculate('sum')}
+        >
+          {t('calc.sum')}
+        </button>
+        <button
+          type="button"
+          className="tool-calc-button calc-button"
+          aria-label={t('calc.average')}
+          title={t('calc.average')}
+          disabled={!props.canCalculate}
+          onClick={() => props.onCalculate('average')}
+        >
+          {t('calc.average')}
+        </button>
+        <button
+          type="button"
+          className="tool-calc-button calc-button"
+          aria-label={t('calc.minimum')}
+          title={t('calc.minimum')}
+          disabled={!props.canCalculate}
+          onClick={() => props.onCalculate('minimum')}
+        >
+          {t('calc.minimum')}
+        </button>
+        <button
+          type="button"
+          className="tool-calc-button calc-button"
+          aria-label={t('calc.maximum')}
+          title={t('calc.maximum')}
+          disabled={!props.canCalculate}
+          onClick={() => props.onCalculate('maximum')}
+        >
+          {t('calc.maximum')}
+        </button>
+        <button
+          type="button"
+          className="tool-calc-button calc-button"
+          aria-label={t('calc.count')}
+          title={t('calc.count')}
+          disabled={!props.canCalculate}
+          onClick={() => props.onCalculate('count')}
+        >
+          {t('calc.count')}
+        </button>
+      </div>
 
-      <span className="toolbar-spacer" aria-hidden="true" />
+      <span className="toolbar-divider" aria-hidden="true" />
 
-      <span className="toolbar-group-label">{t('Calculate')}</span>
-      <div className="toolbar-group">
-        <button type="button" className="calc-button" disabled={!props.canCalculate} onClick={() => props.onCalculate('sum')}>
-          {t('Sum')}
-        </button>
-        <button type="button" className="calc-button" disabled={!props.canCalculate} onClick={() => props.onCalculate('average')}>
-          {t('Average')}
-        </button>
-        <button type="button" className="calc-button" disabled={!props.canCalculate} onClick={() => props.onCalculate('minimum')}>
-          {t('Minimum')}
-        </button>
-        <button type="button" className="calc-button" disabled={!props.canCalculate} onClick={() => props.onCalculate('maximum')}>
-          {t('Maximum')}
-        </button>
-        <button type="button" className="calc-button" disabled={!props.canCalculate} onClick={() => props.onCalculate('count')}>
-          {t('Count')}
-        </button>
+      {/* 7. Optional style/sidebar action */}
+      <div className="toolbar-group" role="group" aria-label="Styles">
+        <ToolButton
+          label={t('toolbar.stylesPanel')}
+          name="palette"
+          onClick={props.onPalette}
+        />
       </div>
     </div>
   )
