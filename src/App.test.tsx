@@ -5,6 +5,6 @@ import App from './App'
 describe('App', () => {
   it('renders sheetly title', () => {
     render(<App />)
-    expect(screen.getByText(/sheetly/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'sheetly' })).toBeInTheDocument()
   })
 })

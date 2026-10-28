@@ -185,15 +185,17 @@ Tests live next to the module they cover as `*.test.ts` / `*.test.tsx`.
 - Any XLSX change needs core tests (pure conversion and a node-env exceljs round-trip) plus reducer tests for the import flow.
 
 ## Desktop UI rules (enforced in `src/ui`)
-- The dark layout is title bar (brand, workbook name, active-sheet chip, saved state, Save CSV / Save XLSX), menu bar (File, Edit, View, Insert, Sheet, Data, Calculate, Help), icon toolbar, format bar, formula bar, grid, calculations sidebar, sheet tabs, and status bar; keep sheetly's own theme and never copy LibreOffice/Excel assets.
+- The responsive layout is title bar (brand, workbook name, active-sheet chip, saved state), menu bar (File, Edit, View, Insert, Sheet, Data, Calculate, Help), editing toolbar with Sheetly AI access, format bar, formula bar, single-operation calculation result strip, grid, optional sidebar, sheet tabs, and status bar; File contains New, Print, CSV, and XLSX actions. Keep Sheetly's semantic light/dark theme and never copy LibreOffice/Excel assets.
 - Every visible menu command and toolbar button must work or be disabled with a clear `Deferred` hint; do not add fake window buttons (minimize/maximize/close).
-- The Click-First Calculations sidebar is open by default and runs Sum/Average/Count/Min/Max on the selected range; card accessible names are `<Name> of selection`.
+- Calculations run only when the user explicitly selects one operation; show only that result above the grid, never automatic statistics in the status bar. Clear the result after selection, data, or active-sheet changes.
+- Printing calls `window.print()` and uses print CSS to hide application controls while retaining workbook/sheet names and the active sheet's visible grid.
+- Sheetly AI is available from the toolbar and Sidebar but remains local-only, opt-in, and unavailable until a local provider is configured; do not add cloud AI, telemetry, an installer, or a model downloader.
 - The filter and find bars are collapsed by default (`bar-slot is-collapsed`); open them from the toolbar or View menu, and keep `Ctrl+F` focusing the find input.
 - Cell formatting is a presentation-only `CellStyle` kept separate from `CellValue`; it is session-only, not part of Undo/Redo, and not saved to CSV/XLSX. Do not claim otherwise.
 - Multi-sheet state lives in `sheetStore` + `sheetOrder`, kept in sync with the active sheet by the public `gridReducer`; each sheet keeps its own styles in `stylesBySheet`.
 - Switching sheets resets the active sheet's undo history (documented limitation) and keeps other sheets' content.
 - The formula bar commits on Enter (or the confirm button) and reverts on Escape (or the cancel button); it must never hijack typing inside the cell editor.
-- Status-bar stats use the existing `countNumeric`/`sumRange`/`averageRange` functions; zoom is session-local.
+- The status bar shows sheet position, selection, operation feedback, saved state, and zoom; zoom is session-local and no calculation statistics appear there.
 - The initial sheet is `Quarterly Sales` at 30 rows × 12 columns; no sample data is seeded. Grid constants live in `ui/config.ts`.
 - New UI behavior needs a Testing Library test; keep `Ctrl+Z/Y`, `Ctrl+C/V/X`, `Ctrl+F`, Enter, Escape, arrows, Shift+arrows, and Delete working without breaking cell editing.
 

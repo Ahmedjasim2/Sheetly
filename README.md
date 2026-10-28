@@ -279,20 +279,21 @@ XLSX is read and written with `exceljs` (MIT), loaded dynamically so it stays ou
 
 ## Desktop-style UI (Phase 16)
 
-The dark layout follows desktop spreadsheet conventions with sheetly's own theme: title bar (brand, workbook name, active-sheet chip, saved state, Save CSV / Save XLSX), menu bar (File, Edit, View, Insert, Sheet, Data, Calculate, Help), icon toolbar, format bar, formula bar (name box, fx, cancel/confirm, editable value), grid, sheet tabs with navigation, status bar, and a calculations sidebar. No assets or code from LibreOffice/Excel are used, and the app stays a web app (no Tauri yet).
+The responsive spreadsheet shell uses Sheetly's own semantic light/dark theme: a compact title bar, a File menu for New/Print/CSV/XLSX operations, menu bar, editing toolbar, formatting bar, formula bar, single-operation calculation result strip, grid, sheet tabs, status bar, and optional sidebar. Print uses the browser's print flow and prints the active sheet and currently visible rows. No assets or code from LibreOffice/Excel are used, and the app stays a web app (no Tauri yet).
 
-- The **Click-First Calculations** sidebar is open by default: Sum, Average, Count, Min, and Max cards run on the selected range.
+- Sum, Average, Count, Minimum, and Maximum run only after the user selects an operation; only that result appears above the grid and clears when the selection or data changes.
 - Menus contain real commands; items that are not implemented are disabled and labelled `Deferred`.
 - The format bar applies font family/size, bold/italic/underline/strikethrough, text and fill colors, horizontal alignment, number format, decimals via `# $ %`, borders, and includes a disabled merge control. Formatting is kept separate from `CellValue`, is session-only, is **not** part of Undo/Redo, and is **not** saved to CSV or XLSX.
 - Multiple sheets can be added, selected, renamed (double-click a tab), duplicated, and deleted (with confirmation). CSV/XLSX still handle the active sheet only. Undo history is per active sheet and resets when switching sheets.
 - The filter and find bars are collapsed by default and open from the toolbar or menus.
-- The status bar shows the sheet position, selection size, last operation, selection Average/Sum/Count, and zoom.
+- The status bar shows the active sheet position, selection, operation feedback, saved state, and zoom; it does not calculate automatic statistics.
+- English and Arabic are supported with live LTR/RTL switching. Print hides application controls and keeps the workbook/sheet headings and grid.
 - The grid starts at 30 rows × 12 columns on a sheet named `Quarterly Sales`; no sample data is seeded (the reference screenshot's rows are demo content).
 - Window controls are limited to real browser actions (fullscreen); there are no fake minimize/maximize/close buttons.
 
 ## AI assistance
 
-Sheetly AI is inside the right Sidebar and is **local-only** in the current product. It is opt-in and disabled by default with a "not ready" message. No cloud providers, API keys, or network requests are exposed. Only the selected range is sent when enabled in future phases; every mutation goes through preview/apply with validation and undo. No Ollama installer or model downloader is included yet.
+Sheetly AI is available from the toolbar and right Sidebar and is **local-only** in the current product. It is opt-in and disabled by default with a translated "Local AI is not ready" message. No cloud providers, API keys, or network requests are exposed. Only the selected range is sent when enabled in future phases; every mutation goes through preview/apply with validation and undo. No Ollama installer or model downloader is included yet.
 
 ## Scope
 

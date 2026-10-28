@@ -11,8 +11,6 @@ export interface TitleBarProps {
   readonly lang: Language
   readonly onToggleTheme: () => void
   readonly onToggleLang: () => void
-  readonly onSaveCsv: () => void
-  readonly onSaveXlsx: () => void
 }
 
 export function TitleBar(props: TitleBarProps) {
@@ -22,7 +20,11 @@ export function TitleBar(props: TitleBarProps) {
   const langTitle = props.lang === 'ar' ? t('lang.switchToEnglish') : t('lang.switchToArabic')
 
   return (
-    <header className="title-bar" role="banner" aria-label="Application title bar">
+    <header
+      className="title-bar"
+      role="banner"
+      aria-label={t('titlebar.application')}
+    >
       <div className="title-left">
         <span className="app-logo" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" focusable="false">
@@ -42,24 +44,7 @@ export function TitleBar(props: TitleBarProps) {
         </span>
       </div>
 
-      <p className="title-tagline">{t('app.tagline')}</p>
-
       <div className="title-actions">
-        <div className="save-group" role="group" aria-label={t('titlebar.saveActions')}>
-          <button type="button" className="save-button" onClick={props.onSaveCsv}>
-            {t('common.saveCsv')}
-          </button>
-          <button
-            type="button"
-            className="save-button save-button-primary"
-            onClick={props.onSaveXlsx}
-          >
-            {t('common.saveXlsx')}
-          </button>
-        </div>
-
-        <span className="title-divider" aria-hidden="true" />
-
         <div className="preferences-group" role="group" aria-label={t('titlebar.preferences')}>
           <button
             type="button"

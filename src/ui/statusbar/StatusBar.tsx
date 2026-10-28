@@ -5,6 +5,7 @@ export interface StatusBarProps {
   readonly sheetCount: number
   readonly selectionLabel?: string
   readonly cellCount?: number
+  readonly dirty: boolean
   readonly message: string
   readonly zoom: number
   readonly onZoomIn: () => void
@@ -21,14 +22,25 @@ export function StatusBar(props: StatusBarProps) {
   const { t } = useI18n()
 
   return (
-    <footer className="status-bar" role="contentinfo" aria-label="Status bar">
+    <footer className="status-bar" role="contentinfo" aria-label={t('statusbar.title')}>
       <div className="status-left">
         <span className="status-sheet-index">
           {t('statusbar.sheet')} {props.sheetIndex} {t('statusbar.of')} {props.sheetCount}
         </span>
+        {props.selectionLabel !== undefined && props.selectionLabel !== '' && (
+          <span className="status-selection">
+            {t('statusbar.selection', {
+              label: props.selectionLabel,
+              count: props.cellCount ?? 1,
+            })}
+          </span>
+        )}
         <span className="status-message" role="status" aria-live="polite">
           <span className="status-dot" aria-hidden="true" />
           {props.message === '' ? t('common.ready') : props.message}
+        </span>
+        <span className={`status-saved${props.dirty ? ' is-dirty' : ''}`}>
+          {props.dirty ? t('titlebar.unsavedChanges') : t('titlebar.saved')}
         </span>
       </div>
 
