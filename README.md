@@ -79,4 +79,4 @@ Excel and LibreOffice may be consulted for behavior, but their source code, asse
 ## Contributors
 
 - Ahmed Jasim — project author
-- OpenAI Codex — repository documentation and contributor guidance
+
